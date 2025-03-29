@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Mail\OtpMail;
 
@@ -30,30 +31,30 @@ class AuthController extends Controller
         \Log::info("Registering user: " . $request->email);
     \Log::info("Generated OTP: " . $otp . " | Expiry: " . $otpExpiry);
 
-       $user = new User();
-$user->name = $request->name;
-$user->email = $request->email;
-$user->password = bcrypt($request->password);
-$user->contact = $request->contact;
-$user->matric = $request->matric;
-$user->user_type = $request->user_type;
-$user->otp = $otp;
-$user->otp_expiry = $otpExpiry;
-$user->is_verified = 0;
-$user->save();
-\Log::info("User saved successfully: " . json_encode($user));
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = bcrypt($request->password);
+        $user->contact = $request->contact;
+        $user->matric = $request->matric;
+        $user->user_type = $request->user_type;
+        $user->otp = $otp;
+        $user->otp_expiry = $otpExpiry;
+        $user->is_verified = 0;
+        $user->save();
+        \Log::info("User saved successfully: " . json_encode($user));
 
        try {
         Mail::to($user->email)->send(new OtpMail($otp));
-    } catch (\Exception $e) {
-        \Log::error("OTP email sending failed: " . $e->getMessage());
-        return response()->json(['message' => 'Registration successful, but OTP email failed to send.', 'error' => $e->getMessage()], 500);
-    }
+       } catch (\Exception $e) {
+            \Log::error("OTP email sending failed: " . $e->getMessage());
+            return response()->json(['message' => 'Registration successful, but OTP email failed to send.', 'error' => $e->getMessage()], 500);
+       }
 
         return response()->json([
             'message' => 'Registration successful! Check your email for OTP verification.',
             'user' => $user
-        ], 201);
+       ], 201);
     }
 
     public function sendOtp(Request $request)
@@ -69,10 +70,10 @@ $user->save();
 
         \Log::info("User requested OTP resend: " . $request->email);
 
-if ($user->otp_expiry && Carbon::now()->lt($user->otp_expiry)) {
-    \Log::info("OTP still valid, not resending: " . $user->otp);
-    return response()->json(['message' => 'OTP is still valid. Please check your email.'], 400);
-}
+        if ($user->otp_expiry && Carbon::now()->lt($user->otp_expiry)) {
+            \Log::info("OTP still valid, not resending: " . $user->otp);
+            return response()->json(['message' => 'OTP is still valid. Please check your email.'], 400);
+        }
 
 
         \Log::info("Generated OTP: $otp for email: " . $request->email);
@@ -135,7 +136,7 @@ if ($user->otp_expiry && Carbon::now()->lt($user->otp_expiry)) {
         return response()->json([
         'message' => 'OTP verified successfully! You can now log in.',
         'status' => true
-    ], 200);
+        ], 200);
     }
 
     public function login(Request $request)
@@ -145,22 +146,44 @@ if ($user->otp_expiry && Carbon::now()->lt($user->otp_expiry)) {
             'password' => 'required'
         ]);
 
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return response()->json(['error' => 'User not found.'], 404);
+        if (!Auth::attempt($request->only('email', 'password'))) {
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Invalid credentials.'], 401);
-        }
-
+        $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login successful!',
+            'message' => 'Login successful',
             'token' => $token,
             'user' => $user
         ], 200);
     }
+
+
+    public function logout(Request $request)
+    {
+        \Log::info("Logout request received.");
+
+        $token = $request->bearerToken();
+        \Log::info("Received Token: " . ($token ?? "No Token Provided"));
+
+        $user = Auth::user();
+    
+        if ($user) {
+            \Log::info("User authenticated: " . $user->email);
+            $user->tokens()->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'Logout successful'
+            ]);
+        }
+
+        \Log::warning("User not authenticated during logout attempt.");
+        return response()->json([
+            'status' => false,
+            'message' => 'User not authenticated'
+        ], 401);
+    }
+
 }
