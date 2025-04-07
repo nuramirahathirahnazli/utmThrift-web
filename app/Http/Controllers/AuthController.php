@@ -29,7 +29,7 @@ class AuthController extends Controller
         $otpExpiry = Carbon::now()->addMinutes(10);
 
         \Log::info("Registering user: " . $request->email);
-    \Log::info("Generated OTP: " . $otp . " | Expiry: " . $otpExpiry);
+        \Log::info("Generated OTP: " . $otp . " | Expiry: " . $otpExpiry);
 
         $user = new User();
         $user->name = $request->name;
@@ -141,24 +141,29 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
+        try {
+            $request->validate([
+                'email' => 'required|email',
+                'password' => 'required'
+            ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            if (!Auth::attempt($request->only('email', 'password'))) {
+                return response()->json(['message' => 'Invalid credentials'], 401);
+            }
+
+            $user = Auth::user();
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'message' => 'Login successful',
+                'token' => $token,
+                'user' => $user
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);
         }
-
-        $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'Login successful',
-            'token' => $token,
-            'user' => $user
-        ], 200);
     }
+
 
 
     public function logout(Request $request)
