@@ -2,36 +2,29 @@
 
 namespace Database\Seeders;
 
+use App\Models\Seller;
 use App\Models\User;
-
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Seeder;
+use Faker\Factory as Faker;
 
 class SellerSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run()
     {
-        // Creating 5 dummy sellers with 'pending' verification status
-        for ($i = 1; $i <= 5; $i++) {
-            User::create([
-                'name' => 'Seller ' . $i,
-                'email' => 'seller' . $i . '@graduate.utm.my',
-                'is_verified' => 1, 
-                'password' => Hash::make('password'), // Default password for testing
-                'contact' => '0123456789',
-                'gender' => 'Male',
-                'location' => 'Location ' . $i,
-                'status' => 'Student', // Or 'inactive', depending on your needs
-                'matric' => 'S12345' . $i,
-                'user_type' => 'Seller', // Seller type
-                'verification_status' => 'pending', // Pending status
-                
-                
+        $faker = Faker::create();
+
+        foreach (range(1, 10) as $index) {
+            $user = User::inRandomOrder()->first(); // Randomly pick a user from the users table
+
+            Seller::create([
+                'user_id' => $user->id,
+                'store_name' => $faker->company,
+                'matric_card_file' => $faker->imageUrl(), // You can replace this with a path to an image if needed
+                'verification_status' => $faker->randomElement(['pending', 'approved', 'rejected']),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }
 }
+

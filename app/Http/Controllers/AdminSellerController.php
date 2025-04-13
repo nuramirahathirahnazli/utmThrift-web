@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Seller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,22 +14,21 @@ class AdminSellerController extends Controller
         $activeTab = $request->get('tab', 'all');
 
         $counts = [
-            'total' => User::where('user_type', 'Seller')->count(),
-            'unverified' => User::where('user_type', 'Seller')
-                                ->where('verification_status', 'pending')
-                                ->count()
+            'total' => Seller::count(), // Get total sellers from the sellers table
+            'unverified' => Seller::where('verification_status', 'pending')->count(), // Get unverified sellers from the sellers table
         ];
 
-        $allSellers = User::where('user_type', 'Seller')
+        $allSellers = Seller::with('user')  
             ->latest()
             ->paginate(10)
             ->appends(['tab' => 'all']);
 
-        $unverifiedSellers = User::where('user_type', 'Seller')
+        $unverifiedSellers = Seller::with('user') 
             ->where('verification_status', 'pending')
             ->latest()
             ->paginate(10)
             ->appends(['tab' => 'unverified']);
+
 
         return view('users.admin.sellers.index', [
             'activeTab' => $activeTab,
@@ -41,10 +41,10 @@ class AdminSellerController extends Controller
 
     public function show($id)
     {
-        $seller = User::with('items')->findOrFail($id);
-
-        return view('users.admin.sellers.show', compact('seller'));
+        $seller = Seller::with('user')->findOrFail($id); 
+        return view('users.admin.sellers.seller_details', compact('seller'));
     }
+
 
     public function edit($id) {
         $seller = User::findOrFail($id);
@@ -70,7 +70,7 @@ class AdminSellerController extends Controller
 
     public function verifySeller(Request $request, $id)
     {
-        $seller = User::findOrFail($id);
+        $seller = Seller::findOrFail($id);
 
         $request->validate([
             'action' => 'required|in:approve,reject'
@@ -79,7 +79,7 @@ class AdminSellerController extends Controller
         $seller->verification_status = $request->action === 'approve' ? 'approved' : 'rejected';
         $seller->save();
 
-        session()->flash('success', 'Seller added successfully!');
-            return redirect()->route('admin.sellers.index');
+        session()->flash('success', 'Seller status updated!');
+        return redirect()->route('admin.sellers.index');
     }
 }

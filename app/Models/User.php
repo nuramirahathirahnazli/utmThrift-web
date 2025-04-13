@@ -60,6 +60,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the sellers for the user.
+     */
+    public function seller()
+    {
+        return $this->hasOne(Seller::class);
+    }
+
+    /**
      * Method to update the seller's verification status.
      *
      * @param string $status The new verification status ('approved' or 'rejected')
