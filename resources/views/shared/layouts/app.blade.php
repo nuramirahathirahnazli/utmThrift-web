@@ -53,7 +53,7 @@
                     <span class="ml-3">Sellers</span>
                 </a>
                 
-                <a href="{{ url('/events') }}" 
+                <a href="{{ url('/admin/events') }}" 
                    class="sidebar-item flex items-center p-4 hover:bg-gray-100 {{ request()->is('events*') ? 'active' : '' }}">
                     <i class="fas fa-calendar-alt w-6 text-gray-500"></i>
                     <span class="ml-3">Events</span>
@@ -103,6 +103,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @yield('scripts')
 </body>
 </html>
 

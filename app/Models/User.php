@@ -26,7 +26,7 @@ class User extends Authenticatable
         'user_type',
         'gender',
         'location',
-        'status',
+        'user_role',
         'verification_status',
         
 ];

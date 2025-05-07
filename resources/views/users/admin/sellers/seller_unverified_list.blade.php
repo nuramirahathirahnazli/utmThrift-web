@@ -24,7 +24,7 @@
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap flex gap-2">
-                    <a href="{{ route('admin.sellers.details', $seller->id) }}"
+                    <a href="{{ route('admin.sellers.show', $seller->id) }}"
                        class="group flex items-center gap-2 text-yellow-600 hover:bg-yellow-100 px-3 py-2 rounded-lg transition duration-150 ease-in-out">
                         <!-- Eye icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:text-yellow-700" fill="none"
