@@ -27,8 +27,8 @@ class UserController extends Controller
                 'user_type' => $user->user_type,
                 'gender' => $user->gender,
                 'location' => $user->location,
-                'status' => $user->status,
-                'created_at' => $user->created_at->format('Y-m-d H:i:s'), // Convert to readable string
+                'user_role' => $user->user_role,
+                'created_at' => $user->created_at->format('Y-m-d H:i:s'), 
             ]
         ], 200);
     }
@@ -44,7 +44,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'gender' => 'nullable|in:Male,Female',
             'location' => 'nullable|string|max:255',
-            'status' => 'nullable|in:Student,Lecturer',
+            'user_role' => 'nullable|in:Student,Lecturer',
             'user_type' => 'required|string|in:Buyer,Seller',
         ]);
 
@@ -79,7 +79,7 @@ class UserController extends Controller
             'contact' => $user->contact,
             'gender' => $user->gender,
             'location' => $user->location,
-            'status' => $user->status,
+            'user_role' => $user->user_role,
             'profile_picture' => $user->profile_picture,
         ]);
 

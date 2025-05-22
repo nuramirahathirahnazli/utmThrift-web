@@ -157,7 +157,12 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Login successful',
                 'token' => $token,
-                'user' => $user
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'user_type' => $user->user_type,
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'An unexpected error occurred', 'details' => $e->getMessage()], 500);

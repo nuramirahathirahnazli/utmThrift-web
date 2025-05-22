@@ -1,41 +1,110 @@
+<!-- views/shared/layout/app.blade.php -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UTMThrift - Admin Panel</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>UTMThrift Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #002366;  /* UTM Navy Blue */
+            --secondary-color: #FFD700;  /* UTM Gold */
+        }
+        
+        .sidebar-item.active {
+            background-color: rgba(0, 35, 102, 0.1);
+            border-left: 4px solid var(--primary-color);
+        }
+    </style>
 </head>
-<body>
+<body class="h-full bg-gray-50">
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-lg fixed h-full">
+            <div class="p-4 border-b">
+                <h1 class="text-xl font-bold text-[var(--primary-color)]">
+                    <i class="fas fa-recycle mr-2 text-[var(--secondary-color)]"></i>
+                    UTMThrift Admin
+                </h1>
+            </div>
+            
+            <nav class="mt-4">
+                <a href="{{ url('/dashboard') }}" 
+                   class="sidebar-item flex items-center p-4 hover:bg-gray-100 {{ request()->is('dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-chart-pie w-6 text-gray-500"></i>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+                
+                <a href="{{ url('/users') }}" 
+                   class="sidebar-item flex items-center p-4 hover:bg-gray-100 {{ request()->is('users*') ? 'active' : '' }}">
+                    <i class="fas fa-users w-6 text-gray-500"></i>
+                    <span class="ml-3">Users</span>
+                </a>
+                
+                <a href="{{ url('/admin/sellers') }}" 
+                   class="sidebar-item flex items-center p-4 hover:bg-gray-100 {{ request()->is('sellers*') ? 'active' : '' }}">
+                    <i class="fas fa-store w-6 text-gray-500"></i>
+                    <span class="ml-3">Sellers</span>
+                </a>
+                
+                <a href="{{ url('/admin/events') }}" 
+                   class="sidebar-item flex items-center p-4 hover:bg-gray-100 {{ request()->is('events*') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-alt w-6 text-gray-500"></i>
+                    <span class="ml-3">Events</span>
+                </a>
+            </nav>
+        </aside>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="#">UTMThrift Admin</a>
-        </div>
-    </nav>
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800">@yield('title')</h2>
+                <div class="flex items-center">
+                    <div class="relative">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User" 
+                             class="w-10 h-10 rounded-full cursor-pointer" 
+                             alt="Admin Avatar">
+                    </div>
+                </div>
+            </div>
 
-    <!-- Tab Menu -->
-    <ul class="nav nav-tabs mt-3 container">
-        <li class="nav-item">
-            <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">Home</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->is('users') ? 'active' : '' }}" href="{{ url('/users/buyers') }}">Buyers</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->is('sellers') ? 'active' : '' }}" href="{{ url('/users/sellers') }}">Sellers</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->is('events') ? 'active' : '' }}" href="{{ url('/events') }}">Events</a>
-        </li>
-    </ul>
+            <!-- Flash Messages -->
+            @if(session('success'))
+                <div 
+                    x-data="{ show: true }" 
+                    x-show="show" 
+                    x-init="setTimeout(() => show = false, 4000)" 
+                    class="mb-6 p-4 border border-green-400 text-green-700 bg-green-100 rounded transition-all"
+                >
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" stroke-width="2"
+                             viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>{{ session('success') }}</span>
+                    </div>
+                </div>
+            @endif
 
-    <!-- Main Content -->
-    <div class="container mt-4">
-        @yield('content')
+            <!-- Content -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                @yield('content')
+            </div>
+
+        </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @yield('scripts')
 </body>
 </html>
+
+
