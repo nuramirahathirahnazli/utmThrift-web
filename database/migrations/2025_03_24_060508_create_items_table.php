@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->integer('quantity')->default(1);
             $table->string('category');
-            $table->string('image')->nullable(); // Stores image file path
+            $table->longText('image')->nullable();
             $table->enum('status', ['Available', 'Sold'])->default('Available');
             $table->unsignedBigInteger('user_id'); // Foreign key to users table
             $table->timestamps();
