@@ -26,7 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route for homescreen user
     Route::get('/events', [EventController::class, 'index']); // Latest or all events
     Route::get('/events/{id}', [EventController::class, 'show']); // Single event details
-
+    Route::get('/items', [ItemController::class, 'listItems']);
 
     //Routes for profile
     Route::get('/profile', [UserController::class, 'getProfile']);
