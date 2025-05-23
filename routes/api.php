@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\SellerItemController;
+use App\Http\Controllers\EventController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -21,6 +22,11 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::post('/logout', [AuthController::class, 'logout']); 
+
+    // Route for homescreen user
+    Route::get('/events', [EventController::class, 'index']); // Latest or all events
+    Route::get('/events/{id}', [EventController::class, 'show']); // Single event details
+
 
     //Routes for profile
     Route::get('/profile', [UserController::class, 'getProfile']);

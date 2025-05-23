@@ -19,4 +19,10 @@ class Event extends Model
         'poster',
     ];
 
+    public function getPosterUrlAttribute()
+    {
+        return $this->poster ? url('event-image/' . $this->poster) : null;
+    }
+
+
 }

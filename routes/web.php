@@ -1,12 +1,29 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\AdminSellerController;
 use App\Http\Controllers\AdminEventController;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Response;
+
+Route::get('/event-image/{filename}', function ($filename) {
+    $path = 'events/' . $filename;
+
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+
+    $file = Storage::disk('public')->get($path);
+    $type = Storage::disk('public')->mimeType($path);
+
+    return Response::make($file, 200)
+        ->header('Content-Type', $type)
+        ->header('Access-Control-Allow-Origin', '*');  // Allow all origins (or specify your frontend origin)
+});
+
+
 
 // Admin manage Seller 
 Route::prefix('/admin/sellers')->name('admin.sellers.')->group(function () {
@@ -28,21 +45,6 @@ Route::prefix('/admin/events')->name('admin.events.')->group(function () {
     Route::delete('/{event}', [AdminEventController::class, 'destroy'])->name('destroy');
 });
 
-// Route for item images
-// Route::get('/item-image/{filename}', function ($filename) {
-//     $path = 'items/' . $filename;
-
-//     if (!Storage::disk('public')->exists($path)) {
-//         abort(404);
-//     }
-
-//     $file = Storage::disk('public')->get($path);
-//     $type = Storage::disk('public')->mimeType($path);
-
-//     return Response::make($file, 200)
-//         ->header('Content-Type', $type)
-//         ->header('Access-Control-Allow-Origin', '*'); // Allow CORS
-// });
 
 Route::get('/', function () {
     return view('welcome');
