@@ -22,13 +22,63 @@ class ItemController extends Controller {
     {
         $limit = $request->query('limit', 10);
 
-        $items = Item::latest()->take($limit)->get();
+        $items = Item::with(['category', 'seller.user'])
+            ->latest()
+            ->take($limit)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'condition' => $item->condition,
+                    'image' => json_decode($item->image) ?: [], // decode JSON images or empty array
+                    'category' => [
+                        'name' => optional($item->category)->name ?? 'Unknown',
+                    ],
+                    'seller_name' => optional(optional($item->seller)->user)->name ?? 'Unknown',
+                    'quantity' => $item->quantity,
+                    'status' => $item->status,
+                    'created_at' => $item->created_at->toDateTimeString(),
+
+                ];
+            });
 
         return response()->json([
             'success' => true,
-            'data' => $items,  // <-- use 'data' key for items
+            'data' => $items,
         ]);
     }
+
+    public function show($id)
+    {
+        $item = Item::with(['category', 'seller.user'])
+            ->findOrFail($id);
+
+        return response()->json([
+            'success' => true,
+            'item' => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'description' => $item->description,
+                'price' => $item->price,
+                'condition' => $item->condition,
+                'images' => json_decode($item->image) ?: [],
+                'category' => [
+                    'id' => $item->category->id,
+                    'name' => $item->category->name,
+                ],
+                'seller' => [
+                    'id' => $item->seller->user_id,
+                    'name' => $item->seller->user->name,
+                    'store_name' => $item->seller->store_name,
+                ],
+                'created_at' => $item->created_at,
+            ]
+        ]);
+    }
+
 
 
 }

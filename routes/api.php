@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/events', [EventController::class, 'index']); // Latest or all events
     Route::get('/events/{id}', [EventController::class, 'show']); // Single event details
     Route::get('/items', [ItemController::class, 'listItems']);
+    Route::get('/buyer/items/{id}', [ItemController::class, 'show']);
 
     //Routes for profile
     Route::get('/profile', [UserController::class, 'getProfile']);
@@ -44,14 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // This is handled by ItemController@listItems above with query parameters
 });
 
-//Route::post('/seller/add-item', [SellerItemController::class, 'store']);
 
-   // Routes for Items
-   // Route::get('/items', [ItemController::class, 'index']); // Fetch all items
-   // Route::post('/items', [ItemController::class, 'store']);
-   // Route::get('/items/{id}', [ItemController::class, 'show']); // Fetch a specific item by ID
-   // Route::get('/items/categories', [ItemController::class, 'getCategories']); // Fetch all categories
-   
 //Testing for CORS problem
 Route::get('/test-cors', function () {
     return response()->json(['message' => 'CORS is working']);
