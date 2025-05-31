@@ -38,7 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Routes for user favourite items
     Route::post('/item/{id}/toggle-favourite', [ItemFavouriteController::class, 'toggleFavourite']);
     Route::get('/item/favourites', [ItemFavouriteController::class, 'getUserFavourites']);
-   
+    Route::get('/items/all-favourited', [ItemFavouriteController::class, 'getAllFavouritedItems']);
+
     ///  ---- Seller Routes ---- ///
     //Routes for seller manage items
     Route::get('/items/categories', [SellerItemController::class, 'getCategories']); //fetch all item categories

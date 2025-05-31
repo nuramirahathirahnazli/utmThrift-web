@@ -55,4 +55,21 @@ class ItemFavouriteController extends Controller
 
         return response()->json($favourites);
     }
+
+    // GET: /api/items/all-favourited
+    public function getAllFavouritedItems(Request $request)
+    {
+        $idsParam = $request->query('ids');
+        if (!$idsParam) {
+            return response()->json(['error' => 'No item IDs provided'], 400);
+        }
+
+        $idsArray = array_map('intval', explode(',', $idsParam));
+        $items = Item::with('category')->whereIn('id', $idsArray)->get();
+
+        return response()->json($items);
+    }
+
+
+
 }
