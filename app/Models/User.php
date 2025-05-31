@@ -78,4 +78,10 @@ class User extends Authenticatable
         $this->verification_status = $status;
         $this->save();
     }
+
+    public function favouriteItems()
+    {
+        return $this->belongsToMany(Item::class, 'itemfavourites')->withTimestamps();
+    }
+
 }
