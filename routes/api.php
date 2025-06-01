@@ -8,6 +8,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\SellerItemController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ItemFavouriteController;
+use App\Http\Controllers\ItemCartController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -40,6 +41,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/item/favourites', [ItemFavouriteController::class, 'getUserFavourites']);
     Route::get('/items/all-favourited', [ItemFavouriteController::class, 'getAllFavouritedItems']);
 
+    //Routes for user cart
+    Route::post('/cart/add', [ItemCartController::class, 'addToCart']);
+    Route::get('/cart/items', [ItemCartController::class, 'getCartItems']);
+    
+    
     ///  ---- Seller Routes ---- ///
     //Routes for seller manage items
     Route::get('/items/categories', [SellerItemController::class, 'getCategories']); //fetch all item categories
