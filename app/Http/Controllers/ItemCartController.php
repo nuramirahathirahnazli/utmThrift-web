@@ -7,6 +7,30 @@ use App\Models\ItemCart;
 
 class ItemCartController extends Controller
 {
+    public function getCartItems($id)
+    {
+        $cartItems = ItemCart::with('item')->where('user_id', $id)->get();
+
+        $formatted = $cartItems->map(function ($cartItem) {
+            $item = $cartItem->item;
+
+            return [
+                'cart_id' => $cartItem->id,
+                'item_id' => $item->id,
+                'item_name' => $item->name,
+                'price' => $item->price,
+                'images' => json_decode($item->image) ?: [], 
+                'quantity' => $cartItem->quantity,
+                'created_at' => $cartItem->created_at->toDateTimeString(),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $formatted,
+        ]);
+    }
+
     public function addToCart(Request $request)
     {
         \Log::info('Add to cart request:', $request->all());
@@ -48,17 +72,5 @@ class ItemCartController extends Controller
     }
 
 
-    public function getCartItems(Request $request)
-    {
-        $user = $request->user();
-
-        $cartItems = ItemCart::with('item')->where('user_id', $user->id)->get();
-
-        $totalQuantity = $cartItems->sum('quantity');
-
-        return response()->json([
-            'cart_items' => $cartItems,
-            'total_quantity' => $totalQuantity,
-        ]);
-    }
+   
 }

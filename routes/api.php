@@ -43,7 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Routes for user cart
     Route::post('/cart/add', [ItemCartController::class, 'addToCart']);
-    Route::get('/cart/items', [ItemCartController::class, 'getCartItems']);
+    Route::get('/cart/{id}', [ItemCartController::class, 'getCartItems']);
     
     
     ///  ---- Seller Routes ---- ///
