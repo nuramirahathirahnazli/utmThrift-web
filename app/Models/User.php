@@ -84,4 +84,15 @@ class User extends Authenticatable
         return $this->belongsToMany(Item::class, 'itemfavourites')->withTimestamps();
     }
 
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
+
+
 }

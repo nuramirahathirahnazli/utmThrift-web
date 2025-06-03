@@ -9,6 +9,7 @@ use App\Http\Controllers\SellerItemController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ItemFavouriteController;
 use App\Http\Controllers\ItemCartController;
+use App\Http\Controllers\MessageController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -45,7 +46,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/add', [ItemCartController::class, 'addToCart']);
     Route::get('/cart/{id}', [ItemCartController::class, 'getCartItems']);
     
-    
+    // Routes for user messages
+    Route::get('/messages', [MessageController::class, 'index']);
+    Route::post('/messages', [MessageController::class, 'store']);
+    Route::get('/messages/unread-count', [MessageController::class, 'getUnreadCount']);
+    Route::get('/messages/chat-list', [MessageController::class, 'getChatList']);
+    Route::post('/messages/mark-as-read', [MessageController::class, 'markAsRead']);
+
+
     ///  ---- Seller Routes ---- ///
     //Routes for seller manage items
     Route::get('/items/categories', [SellerItemController::class, 'getCategories']); //fetch all item categories
@@ -54,6 +62,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/seller/{id}/items', [SellerItemController::class, 'myItems']);
     Route::post('seller/update-items/{id}', [SellerItemController::class, 'update']);
     Route::delete('/seller/delete-item/{id}', [SellerItemController::class, 'destroy']);
+
+    // Routes for seller messages
+    Route::get('/seller/messages/{seller_id}', [MessageController::class, 'getSellerMessages']);
+
 
     // Explore page routes with filters (example: /api/items?search=shirt&category_id=2&min_price=10&max_price=50&condition=new)
     // This is handled by ItemController@listItems above with query parameters
