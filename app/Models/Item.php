@@ -24,4 +24,14 @@ class Item extends Model {
         return $this->belongsTo(ItemCategory::class, 'category_id');
     }
 
+    public function seller()
+    {
+        return $this->belongsTo(Seller::class, 'user_id', 'user_id');
+    }
+
+    public function favouritedBy()
+    {
+        return $this->belongsToMany(User::class, 'itemfavourites')->withTimestamps();
+    }
+
 }

@@ -6,6 +6,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\SellerItemController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\ItemFavouriteController;
+use App\Http\Controllers\ItemCartController;
+use App\Http\Controllers\MessageController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -26,6 +30,33 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [UserController::class, 'getProfile']);
     Route::put('/profile/update', [UserController::class, 'updateProfile']);
 
+    ///  ---- User Buyer Routes ---- ///
+    // Route for homescreen user
+    Route::get('/events', [EventController::class, 'index']); // Latest or all events
+    Route::get('/events/{id}', [EventController::class, 'show']); // Single event details
+    Route::get('/items', [ItemController::class, 'listItems']);
+    Route::get('/buyer/items/{id}', [ItemController::class, 'show']);
+
+    // Routes for user favourite items
+    Route::post('/item/{id}/toggle-favourite', [ItemFavouriteController::class, 'toggleFavourite']);
+    Route::get('/item/favourites', [ItemFavouriteController::class, 'getUserFavourites']);
+    Route::get('/items/all-favourited', [ItemFavouriteController::class, 'getAllFavouritedItems']);
+
+    //Routes for user cart
+    Route::post('/cart/add', [ItemCartController::class, 'addToCart']);
+    Route::get('/cart/{id}', [ItemCartController::class, 'getCartItems']);
+    
+    // Routes for user messages
+    Route::get('/messages', [MessageController::class, 'index']);
+    Route::post('/messages', [MessageController::class, 'store']);
+    Route::get('/buyer/messages/{buyer_id}', [MessageController::class, 'getUserMessages']);
+    Route::get('/seller/messages/{seller_id}', [MessageController::class, 'getSellerMessages']);
+    Route::get('/messages/unread-count', [MessageController::class, 'getUnreadCount']);
+    Route::get('/messages/chat-list', [MessageController::class, 'getChatList']);
+    Route::post('/messages/mark-as-read', [MessageController::class, 'markAsRead']);
+
+
+    ///  ---- Seller Routes ---- ///
     //Routes for seller manage items
     Route::get('/items/categories', [SellerItemController::class, 'getCategories']); //fetch all item categories
     Route::post('/seller/add-item', [SellerItemController::class, 'store']);
@@ -34,16 +65,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('seller/update-items/{id}', [SellerItemController::class, 'update']);
     Route::delete('/seller/delete-item/{id}', [SellerItemController::class, 'destroy']);
 
+
+    // Explore page routes with filters (example: /api/items?search=shirt&category_id=2&min_price=10&max_price=50&condition=new)
+    // This is handled by ItemController@listItems above with query parameters
 });
 
-//Route::post('/seller/add-item', [SellerItemController::class, 'store']);
 
-   // Routes for Items
-   // Route::get('/items', [ItemController::class, 'index']); // Fetch all items
-   // Route::post('/items', [ItemController::class, 'store']);
-   // Route::get('/items/{id}', [ItemController::class, 'show']); // Fetch a specific item by ID
-   // Route::get('/items/categories', [ItemController::class, 'getCategories']); // Fetch all categories
-   
 //Testing for CORS problem
 Route::get('/test-cors', function () {
     return response()->json(['message' => 'CORS is working']);
