@@ -11,27 +11,23 @@ class MessageController extends Controller
     {
         $userId = $request->user()->id;
         $otherUserId = $request->query('with_user_id');
-        $itemId = $request->query('item_id'); // New
 
-        $query = Message::where(function ($q) use ($userId, $otherUserId) {
-                $q->where('sender_id', $userId)->where('receiver_id', $otherUserId);
-            })
-            ->orWhere(function ($q) use ($userId, $otherUserId) {
-                $q->where('sender_id', $otherUserId)->where('receiver_id', $userId);
-            });
-
-        if ($itemId) {
-            $query->where('item_id', $itemId);
-        }
-
-        $messages = $query->orderBy('created_at')->get();
+        $messages = Message::where(function ($q) use ($userId, $otherUserId) {
+            $q->where('sender_id', $userId)->where('receiver_id', $otherUserId);
+        })->orWhere(function ($q) use ($userId, $otherUserId) {
+            $q->where('sender_id', $otherUserId)->where('receiver_id', $userId);
+        })
+        ->orderBy('created_at')
+        ->get();
 
         return response()->json($messages);
     }
 
-
     public function store(Request $request)
     {
+         // DEBUG
+        logger('store request data:', $request->all());
+
         $validated = $request->validate([
             'receiver_id' => 'required|exists:users,id',
             'item_id' => 'nullable|exists:items,id',
@@ -48,6 +44,16 @@ class MessageController extends Controller
         return response()->json($message);
     }
 
+    public function getUserMessages($buyerId)
+    {
+        $messages = Message::where('receiver_id', $buyerId)
+                    ->with('sender:id,name') // optional: include sender name
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+        return response()->json($messages);
+    }
+    
     public function getSellerMessages($sellerId)
     {
         $messages = Message::where('receiver_id', $sellerId)
@@ -70,15 +76,13 @@ class MessageController extends Controller
         return response()->json(['unreadCount' => $unreadCount]);
     }
 
-
     public function getChatList(Request $request)
     {
         $userId = $request->user()->id;
 
-        // Include item relationship too
         $messages = Message::where('sender_id', $userId)
                     ->orWhere('receiver_id', $userId)
-                    ->with(['sender:id,name', 'receiver:id,name', 'item:id,name']) // <--- moved here
+                    ->with(['sender:id,name', 'receiver:id,name'])
                     ->orderBy('created_at', 'desc')
                     ->get();
 
@@ -86,22 +90,24 @@ class MessageController extends Controller
 
         foreach ($messages as $msg) {
             $partner = $msg->sender_id === $userId ? $msg->receiver : $msg->sender;
-            $itemId = $msg->item?->id;
 
-            // Count unread messages for this partner & item (where current user is receiver)
-            $unreadCount = Message::where('sender_id', $partner->id)
-                ->where('receiver_id', $userId)
-                ->where('item_id', $itemId)
-                ->where('is_read', false)
-                ->count();
+            $key = $partner->id;
 
-            $chatPartners[$partner->id . '_' . $itemId] = [
-                'sellerId' => $partner->id,
-                'name' => $partner->name,
-                'itemId' => $itemId,
-                'itemName' => $msg->item?->name ?? 'Unknown Item',
-                'unreadCount' => $unreadCount,
-            ];
+            if (!isset($chatPartners[$key])) {
+                // Count unread messages from this partner
+                $unreadCount = Message::where('sender_id', $partner->id)
+                    ->where('receiver_id', $userId)
+                    ->where('is_read', false)
+                    ->count();
+
+                $chatPartners[$key] = [
+                    'sellerId' => $partner->id,
+                    'name' => $partner->name,
+                    'lastMessage' => $msg->message,
+                    'lastUpdated' => $msg->updated_at,
+                    'unreadCount' => $unreadCount,
+                ];
+            }
         }
 
         return response()->json(array_values($chatPartners));

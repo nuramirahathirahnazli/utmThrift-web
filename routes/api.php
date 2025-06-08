@@ -49,6 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Routes for user messages
     Route::get('/messages', [MessageController::class, 'index']);
     Route::post('/messages', [MessageController::class, 'store']);
+    Route::get('/buyer/messages/{buyer_id}', [MessageController::class, 'getUserMessages']);
+    Route::get('/seller/messages/{seller_id}', [MessageController::class, 'getSellerMessages']);
     Route::get('/messages/unread-count', [MessageController::class, 'getUnreadCount']);
     Route::get('/messages/chat-list', [MessageController::class, 'getChatList']);
     Route::post('/messages/mark-as-read', [MessageController::class, 'markAsRead']);
@@ -62,9 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/seller/{id}/items', [SellerItemController::class, 'myItems']);
     Route::post('seller/update-items/{id}', [SellerItemController::class, 'update']);
     Route::delete('/seller/delete-item/{id}', [SellerItemController::class, 'destroy']);
-
-    // Routes for seller messages
-    Route::get('/seller/messages/{seller_id}', [MessageController::class, 'getSellerMessages']);
 
 
     // Explore page routes with filters (example: /api/items?search=shirt&category_id=2&min_price=10&max_price=50&condition=new)
