@@ -10,6 +10,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ItemFavouriteController;
 use App\Http\Controllers\ItemCartController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\OrderController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -45,7 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     //Routes for user cart
     Route::post('/cart/add', [ItemCartController::class, 'addToCart']);
     Route::get('/cart/{id}', [ItemCartController::class, 'getCartItems']);
-    
+    Route::delete('/cart/remove/{itemId}', [ItemCartController::class, 'removeItem']);
+
     // Routes for user messages
     Route::get('/messages', [MessageController::class, 'index']);
     Route::post('/messages', [MessageController::class, 'store']);
@@ -55,7 +57,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages/chat-list', [MessageController::class, 'getChatList']);
     Route::post('/messages/mark-as-read', [MessageController::class, 'markAsRead']);
 
-
+    // Routes for user orders checkout
+    Route::post('/checkout/meetup', [OrderController::class, 'checkoutMeetUp']);
+    Route::post('/orders/create', [OrderController::class, 'create']);
+    Route::post('/orders/{orderId}/confirm', [OrderController::class, 'confirmOrder'])->middleware('auth:sanctum'); 
+    Route::get('/orders/buyer', [OrderController::class, 'getBuyerOrders']);
+    
     ///  ---- Seller Routes ---- ///
     //Routes for seller manage items
     Route::get('/items/categories', [SellerItemController::class, 'getCategories']); //fetch all item categories

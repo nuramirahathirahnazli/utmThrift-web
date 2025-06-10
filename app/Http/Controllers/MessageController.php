@@ -25,24 +25,46 @@ class MessageController extends Controller
 
     public function store(Request $request)
     {
-         // DEBUG
         logger('store request data:', $request->all());
 
         $validated = $request->validate([
             'receiver_id' => 'required|exists:users,id',
             'item_id' => 'nullable|exists:items,id',
             'message' => 'required|string',
+            'sender_id' => 'sometimes|exists:users,id',
         ]);
 
+        $senderId = $validated['sender_id'] ?? $request->user()->id;
+
+        // Create original message
         $message = Message::create([
-            'sender_id' => $request->user()->id,
+            'sender_id' => $senderId,
             'receiver_id' => $validated['receiver_id'],
             'item_id' => $validated['item_id'] ?? null,
             'message' => $validated['message'],
         ]);
 
+        // Auto-reply condition: buyer sends message with "Meet Up"
+        // if (
+        //     str_contains(strtolower($validated['message']), 'meet') &&
+        //     str_contains(strtolower($validated['message']), 'payment')
+        // ) {
+        //     // Auto-reply from seller
+        //    // $autoReply = "Hi! Thank you for choosing to meet. Please let me know your availability and preferred location.";
+
+        //     Message::create([
+        //         'sender_id' => $validated['receiver_id'],      // seller replies
+        //         'receiver_id' => $senderId,                    // buyer receives
+        //         'item_id' => $validated['item_id'] ?? null,
+        //         'message' => '',
+        //     ]);
+
+        //     logger('Auto-reply sent to buyer from seller.');
+        // }
+
         return response()->json($message);
     }
+
 
     public function getUserMessages($buyerId)
     {
