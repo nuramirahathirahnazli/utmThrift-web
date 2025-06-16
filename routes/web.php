@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\AdminSellerController;
 use App\Http\Controllers\AdminEventController;
+use App\Http\Controllers\ToyyibPayController;
 
 Route::get('/event-image/{filename}', function ($filename) {
     $path = 'events/' . $filename;
@@ -44,6 +45,10 @@ Route::prefix('/admin/events')->name('admin.events.')->group(function () {
     Route::get('/{event}', [AdminEventController::class, 'show'])->name('show');
     Route::delete('/{event}', [AdminEventController::class, 'destroy'])->name('destroy');
 });
+
+// ToyyibPay’s success and callback is sent by their server. If it's protected by auth:sanctum, it may fail.
+Route::get('/payment-success', [ToyyibPayController::class, 'paymentSuccess']);
+Route::post('/payment-callback', [ToyyibPayController::class, 'paymentCallback']);
 
 
 Route::get('/', function () {

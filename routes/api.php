@@ -11,6 +11,7 @@ use App\Http\Controllers\ItemFavouriteController;
 use App\Http\Controllers\ItemCartController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ToyyibPayController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -62,7 +63,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/create', [OrderController::class, 'create']);
     Route::post('/orders/{orderId}/confirm', [OrderController::class, 'confirmOrder'])->middleware('auth:sanctum'); 
     Route::get('/orders/buyer', [OrderController::class, 'getBuyerOrders']);
+    Route::post('/orders/{id}/manual-confirm', [OrderController::class, 'manualConfirm']); //for payment method = online banking
+
+    // Routes for payment
+    Route::post('/create-bill', [ToyyibPayController::class, 'createBill']);
     
+
+
     ///  ---- Seller Routes ---- ///
     //Routes for seller manage items
     Route::get('/items/categories', [SellerItemController::class, 'getCategories']); //fetch all item categories
@@ -76,7 +83,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Explore page routes with filters (example: /api/items?search=shirt&category_id=2&min_price=10&max_price=50&condition=new)
     // This is handled by ItemController@listItems above with query parameters
 });
-
 
 //Testing for CORS problem
 Route::get('/test-cors', function () {

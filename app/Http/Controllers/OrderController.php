@@ -12,6 +12,7 @@ use App\Models\Itemscart;
 
 class OrderController extends Controller
 {
+    // User at checkout details page, then choose meet up for payment method
     public function checkoutMeetUp(Request $request)
     {
         $user = auth()->user();
@@ -78,6 +79,53 @@ class OrderController extends Controller
         }
     }
  
+    // User at checkout details page, then choose online banking as payment method
+    public function checkoutOnlineBanking(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'quantity' => 'nullable|integer|min:1'
+        ]);
+
+        $item = Item::findOrFail($request->item_id);
+        $quantity = $request->quantity ?? 1;
+
+        if (strtolower($item->status) !== 'available') {
+            return response()->json(['error' => 'Item is not available.'], 422);
+        }
+
+        if ($quantity > $item->quantity) {
+            return response()->json(['error' => 'Requested quantity exceeds available stock.'], 422);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $order = Order::create([
+                'buyer_id' => $user->id,
+                'item_id' => $item->id,
+                'seller_id' => $item->user_id,
+                'quantity' => $quantity,
+                'payment_method' => 'Online Banking',
+                'order_status' => 'pending',
+            ]);
+            
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'order_id' => $order->id,
+                'message' => 'Order created. Proceed to online payment.'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to process order: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function create(Request $request)
     {
         // Validate input
@@ -86,7 +134,7 @@ class OrderController extends Controller
             'item_id' => 'required|integer|exists:items,id',
             'seller_id' => 'required|integer|exists:users,id',
             'quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|string|in:Meet Up,COD,Online',
+            'payment_method' => 'required|in:Online Banking,QR Code,Meet Up',
         ]);
 
         if ($validator->fails()) {
@@ -108,10 +156,12 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order created successfully',
+            'order_id' => $order->id,
             'order' => $order,
         ], 201);
     }
 
+    // bila payment mthod = meet with selelr
     public function confirmOrder(Request $request, $orderId)
     {
         $user = auth()->user();
@@ -147,6 +197,56 @@ class OrderController extends Controller
         ]);
     }
 
+    //Bila user click on "back to orders"
+    public function manualConfirm(Request $request, $id)
+    {
+        $user = auth()->user();
+
+        \Log::info('Manual confirm request', [
+            'user_id' => $user->id,
+            'order_id' => $id,
+        ]);
+
+        // 1. Find the order and validate
+        $order = Order::with('item')
+            ->where('id', $id)
+            ->where('buyer_id', $user->id)
+            ->first();
+
+        if (!$order) {
+            \Log::warning('Order not found for manual confirm', [
+                'user_id' => $user->id,
+                'order_id' => $id,
+            ]);
+
+            return response()->json(['success' => false, 'message' => 'Order not found'], 404);
+        }
+
+        if ($order->order_status === 'completed') {
+            return response()->json(['success' => false, 'message' => 'Order already completed'], 400);
+        }
+
+        // 2. Update order status
+        $order->order_status = 'completed'; 
+        $order->save();
+
+        // 3. Update item (optional: check if it's not already sold)
+        $item = $order->item;
+        if ($item && strtolower($item->status) !== 'sold') {
+            $item->status = 'sold';
+            $item->save();
+        }
+
+        // 4. Update cart (optional)
+        DB::table('itemscart')  // make sure the table name matches your actual table
+            ->where('user_id', $user->id)
+            ->where('item_id', $item->id)
+            ->delete();
+
+        return response()->json(['success' => true, 'message' => 'Order manually confirmed']);
+    }
+
+    
     public function getBuyerOrders()
     {
         $user = auth()->user();

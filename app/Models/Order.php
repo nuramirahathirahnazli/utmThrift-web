@@ -14,6 +14,7 @@ class Order extends Model {
         'quantity',
         'payment_method',
         'order_status',
+        'bill_code',
     ];
 
     public function item()
