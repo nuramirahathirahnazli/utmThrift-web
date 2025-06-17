@@ -12,6 +12,7 @@ use App\Http\Controllers\ItemCartController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ToyyibPayController;
+use App\Http\Controllers\ReviewRatingController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -68,6 +69,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Routes for payment
     Route::post('/create-bill', [ToyyibPayController::class, 'createBill']);
     
+    //Routes for review/rating to seller
+    Route::post('/reviews', [ReviewRatingController::class, 'store']);             // Submit review
+    Route::get('/reviews/seller/{sellerId}', [ReviewRatingController::class, 'sellerReviews']); // Get all reviews for a seller
+    Route::get('/rating/seller/{sellerId}', [ReviewRatingController::class, 'averageRating']); // Get average rating for a seller
 
 
     ///  ---- Seller Routes ---- ///

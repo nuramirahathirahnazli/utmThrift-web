@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Itemscart;
-
+use App\Models\ReviewRating;
 
 class OrderController extends Controller
 {
@@ -251,11 +251,26 @@ class OrderController extends Controller
     {
         $user = auth()->user();
 
-        $orders = Order::with('item') // eager load item details
+        $orders = Order::with('item')
             ->where('buyer_id', $user->id)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                $alreadyReviewed = DB::table('reviews')
+                    ->where('order_id', $order->id)
+                    ->where('buyer_id', $order->buyer_id)
+                    ->exists();
+
+                return [
+                    'id' => $order->id,
+                    'order_status' => $order->order_status,
+                    'payment_method' => $order->payment_method,
+                    'item' => $order->item,
+                    'already_reviewed' => $alreadyReviewed, // 👈 this is needed
+                ];
+            });
 
         return response()->json($orders, 200);
     }
+
 }
