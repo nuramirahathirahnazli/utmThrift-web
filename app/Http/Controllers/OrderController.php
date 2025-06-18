@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Item;
 use App\Models\Order;
-use App\Models\Itemscart;
+use App\Models\ItemCart;
 use App\Models\ReviewRating;
 
 class OrderController extends Controller
@@ -57,7 +57,7 @@ class OrderController extends Controller
             $item->save();
 
             // Remove item(s) from cart
-            Itemscart::where('user_id', $user->id)
+            Itemcart::where('user_id', $user->id)
                 ->where('item_id', $item->id)
                 ->delete();
 
@@ -246,7 +246,50 @@ class OrderController extends Controller
         return response()->json(['success' => true, 'message' => 'Order manually confirmed']);
     }
 
-    
+    // After buyer dah settle payment, upload receipt untuk proof QR Code
+    public function uploadReceipt(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+
+        if (!$request->hasFile('receipt')) {
+            return response()->json(['error' => 'No receipt uploaded.'], 400);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // 1. Upload receipt
+            $path = $request->file('receipt')->store('receipts', 'public');
+            $order->receipt_image = $path;
+            $order->order_status = 'completed';
+            $order->save();
+
+            // 2. Decrease item quantity and mark as sold if needed
+            $item = Item::find($order->item_id);
+            if ($item) {
+                $item->quantity = max(0, $item->quantity - $order->quantity); // prevent negative quantity
+                if ($item->quantity <= 0) {
+                    $item->status = 'sold';
+                }
+                $item->save();
+            }
+
+            // 3. Remove item from buyer's cart
+            Itemcart::where('user_id', $order->buyer_id)
+                ->where('item_id', $order->item_id)
+                ->delete();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Receipt uploaded. Order completed and item updated.']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Upload failed: ' . $e->getMessage()], 500);
+        }
+    }
+
+
     public function getBuyerOrders()
     {
         $user = auth()->user();

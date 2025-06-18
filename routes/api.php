@@ -14,6 +14,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ToyyibPayController;
 use App\Http\Controllers\ReviewRatingController;
 use App\Http\Controllers\SellerApplicationController;
+use App\Http\Controllers\SellerController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -67,9 +68,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/buyer', [OrderController::class, 'getBuyerOrders']);
     Route::post('/orders/{id}/manual-confirm', [OrderController::class, 'manualConfirm']); //for payment method = online banking
 
-    // Routes for payment
+    // Routes for payment toyyibpay
     Route::post('/create-bill', [ToyyibPayController::class, 'createBill']);
     
+    //Routes for payment qr code
+    Route::post('/order/{id}/upload-receipt', [OrderController::class, 'uploadReceipt']);
+
     //Routes for review/rating to seller
     Route::post('/reviews', [ReviewRatingController::class, 'store']);                              // Submit review
     Route::get('/reviews/seller/{sellerId}', [ReviewRatingController::class, 'getSellerReviews']);  // Get all reviews for a seller
@@ -86,6 +90,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('seller/update-items/{id}', [SellerItemController::class, 'update']);
     Route::delete('/seller/delete-item/{id}', [SellerItemController::class, 'destroy']);
 
+    //Routes for seller manage QR Code
+    Route::post('/seller/upload-qr-code', [SellerController::class, 'uploadQRCode']);
+    Route::get('/seller/{id}/qr-code', [SellerController::class, 'getQRCode']);
+    
 
     // Explore page routes with filters (example: /api/items?search=shirt&category_id=2&min_price=10&max_price=50&condition=new)
     // This is handled by ItemController@listItems above with query parameters

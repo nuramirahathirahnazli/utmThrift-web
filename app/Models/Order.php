@@ -15,6 +15,7 @@ class Order extends Model {
         'payment_method',
         'order_status',
         'bill_code',
+        'receipt_image',
     ];
 
     public function item()

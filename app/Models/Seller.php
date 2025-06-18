@@ -12,6 +12,7 @@ class Seller extends Model
         'store_name',
         'matric_card_image',
         'verification_status',
+        'qr_code_image',
     ];
 
     public function user()
