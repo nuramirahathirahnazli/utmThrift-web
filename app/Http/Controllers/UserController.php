@@ -93,6 +93,4 @@ class UserController extends Controller
         ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     }
 
-
-
 }

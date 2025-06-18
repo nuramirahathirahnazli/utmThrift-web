@@ -13,6 +13,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ToyyibPayController;
 use App\Http\Controllers\ReviewRatingController;
+use App\Http\Controllers\SellerApplicationController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -72,6 +73,9 @@ Route::middleware('auth:sanctum')->group(function () {
     //Routes for review/rating to seller
     Route::post('/reviews', [ReviewRatingController::class, 'store']);                              // Submit review
     Route::get('/reviews/seller/{sellerId}', [ReviewRatingController::class, 'getSellerReviews']);  // Get all reviews for a seller
+
+    // Buyer to Seller Authentication
+    Route::post('/apply-seller', [SellerApplicationController::class, 'apply'])->name('apply.seller');
 
     ///  ---- Seller Routes ---- ///
     //Routes for seller manage items

@@ -10,7 +10,7 @@ class Seller extends Model
     protected $fillable = [
         'user_id',
         'store_name',
-        'matric_card_file',
+        'matric_card_image',
         'verification_status',
     ];
 

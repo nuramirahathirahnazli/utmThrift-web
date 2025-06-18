@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Seller;
+use App\Notifications\SellerApplicationStatusNotification;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -76,10 +78,25 @@ class AdminSellerController extends Controller
             'action' => 'required|in:approve,reject'
         ]);
 
-        $seller->verification_status = $request->action === 'approve' ? 'approved' : 'rejected';
+        $status = $request->action === 'approve' ? 'approved' : 'rejected';
+
+        // Update seller verification status
+        $seller->verification_status = $status;
         $seller->save();
+
+        // Update user_type
+        $user = $seller->user;
+        if ($user) {
+            $user->user_type = $status === 'approved' ? 'Seller' : 'Buyer';
+            $user->save();
+
+            // Send email notification
+            $user->notify(new SellerApplicationStatusNotification($status));
+        }
 
         session()->flash('success', 'Seller status updated!');
         return redirect()->route('admin.sellers.index');
     }
+
+
 }

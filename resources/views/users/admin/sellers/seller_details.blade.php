@@ -92,8 +92,8 @@
                             <p class="text-gray-800">{{ $seller->user->matric ?? 'Not Provided' }}</p>
                         </div>
                         <div>
-                            <label class="text-sm font-medium text-gray-500">Matric Card File</label>
-                            @if ($seller->matric_card_file)
+                            <label class="text-sm font-medium text-gray-500">Matric Card Image</label>
+                            @if ($seller->matric_card_image)
                                 <button 
                                     onclick="document.getElementById('pdfModal').classList.remove('hidden')" 
                                     class="flex items-center text-blue-600 hover:text-blue-800 transition-colors mt-1">
@@ -116,7 +116,8 @@
                                     ✕
                                 </button>
                                 <iframe 
-                                    src="{{ asset('storage/' . $seller->matric_card_file) }}" 
+                                    src="{{ $seller->matric_card_image }}"
+                                    alt="Matric Card PDF"
                                     class="w-full h-full border rounded" 
                                     frameborder="0">
                                 </iframe>
