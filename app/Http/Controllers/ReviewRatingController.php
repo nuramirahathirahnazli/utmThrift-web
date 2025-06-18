@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Review;
 use App\Models\Order;
+use App\Models\Seller;
 
 class ReviewRatingController extends Controller
 {   
@@ -48,20 +49,42 @@ class ReviewRatingController extends Controller
     }
 
     // Get all reviews for a seller
-    public function sellerReviews($sellerId)
+    public function getSellerReviews($sellerId)
     {
-         $reviews = Review::with('buyer')
+        $reviews = Review::with('buyer') // buyer = user who gives review
             ->where('seller_id', $sellerId)
             ->latest()
             ->get();
 
-        return response()->json($reviews);
+        $averageRating = Review::where('seller_id', $sellerId)->avg('rating');
+
+         // Load seller and related user
+        $seller = Seller::with('user')->where('user_id', $sellerId)->first();
+            
+        return response()->json([
+            'average_rating' => $averageRating,
+            'seller' => [
+                'id' => $seller->id,
+                'store_name' => $seller->store_name,
+                'name' => $seller->user->name ?? null,
+                'contact' => $seller->user->contact ?? null,
+                'user_role' => $seller->user->user_role ?? null,
+                'faculty' => $seller->user->faculty ?? null,
+                'location' => $seller->user->location ?? null,
+            ],
+            'reviews' => $reviews->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'buyer_id' => $review->buyer_id,
+                    'buyer_name' => $review->buyer->name, 
+                    'seller_id' => $review->seller_id,
+                    'rating' => $review->rating,
+                    'comment' => $review->comment,
+                    'created_at' => $review->created_at->toDateTimeString(),
+                ];
+            }),
+        ]);
     }
 
-    // Get average rating for a seller
-    public function averageRating($sellerId)
-    {
-        $avg = Review::where('seller_id', $sellerId)->avg('rating');
-        return response()->json(['seller_id' => $sellerId, 'average_rating' => round($avg, 2)]);
-    }
+
 }

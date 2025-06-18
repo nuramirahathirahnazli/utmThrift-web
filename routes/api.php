@@ -70,10 +70,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/create-bill', [ToyyibPayController::class, 'createBill']);
     
     //Routes for review/rating to seller
-    Route::post('/reviews', [ReviewRatingController::class, 'store']);             // Submit review
-    Route::get('/reviews/seller/{sellerId}', [ReviewRatingController::class, 'sellerReviews']); // Get all reviews for a seller
-    Route::get('/rating/seller/{sellerId}', [ReviewRatingController::class, 'averageRating']); // Get average rating for a seller
-
+    Route::post('/reviews', [ReviewRatingController::class, 'store']);                              // Submit review
+    Route::get('/reviews/seller/{sellerId}', [ReviewRatingController::class, 'getSellerReviews']);  // Get all reviews for a seller
 
     ///  ---- Seller Routes ---- ///
     //Routes for seller manage items
