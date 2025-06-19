@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon; 
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+
 use App\Models\Seller;
+use App\Models\Order;
+use App\Models\Item;
 
 class SellerController extends Controller
 {
@@ -58,6 +64,56 @@ class SellerController extends Controller
             'qr_code_image' => $seller->qr_code_image,
         ]);
     }
+
+    public function getSellerSales(Request $request, $sellerId)
+    {
+        $month = $request->query('month'); // e.g. 6 for June
+        $year = $request->query('year');   // e.g. 2025
+
+        $query = DB::table('orders')
+            ->join('items', 'orders.item_id', '=', 'items.id')
+            ->select(
+                'orders.id as order_id',
+                'items.name as item_name',
+                'items.price',
+                'orders.quantity',
+                'orders.payment_method',
+                'orders.receipt_image',
+                'orders.created_at'
+            )
+            ->where('orders.seller_id', $sellerId)
+            ->where('orders.order_status', 'completed');
+
+        if ($month && $year) {
+            $query->whereMonth('orders.created_at', $month)
+                ->whereYear('orders.created_at', $year);
+        }
+
+        $sales = $query->orderBy('orders.created_at', 'desc')->get();
+        
+        $totalQuantity = 0;
+        $totalRevenue = 0;
+
+        foreach ($sales as $sale) {
+            $totalQuantity += $sale->quantity;
+            $totalRevenue += $sale->price * $sale->quantity;
+        }
+
+        $summary = [
+            'month' => $month && $year
+                ? Carbon::create()->month($month)->format('F') . ' ' . $year
+                : 'All Time', // or use Carbon::now()->format('F Y') for current month
+            'items_sold' => $totalQuantity,
+            'total_revenue' => $totalRevenue,
+        ];
+
+
+        return response()->json([
+            'summary' => $summary,
+            'sales' => $sales,
+        ]);
+    }
+
 
 
 

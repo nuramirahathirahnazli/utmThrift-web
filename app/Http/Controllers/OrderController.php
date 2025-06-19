@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\ItemCart;
@@ -258,30 +259,39 @@ class OrderController extends Controller
         DB::beginTransaction();
 
         try {
-            // 1. Upload receipt
-            $path = $request->file('receipt')->store('receipts', 'public');
-            $order->receipt_image = $path;
+            // 1. Upload to Cloudinary
+            $uploadedUrl = Cloudinary::upload(
+                $request->file('receipt')->getRealPath(),
+                [
+                    'folder' => 'utmthrift/receipts',
+                    'public_id' => 'order_' . $order->id . '_receipt',
+                    'overwrite' => true,
+                ]
+            )->getSecurePath();
+
+            // 2. Update order
+            $order->receipt_image = $uploadedUrl;  // This now stores full Cloudinary URL
             $order->order_status = 'completed';
             $order->save();
 
-            // 2. Decrease item quantity and mark as sold if needed
+            // 3. Decrease item quantity
             $item = Item::find($order->item_id);
             if ($item) {
-                $item->quantity = max(0, $item->quantity - $order->quantity); // prevent negative quantity
+                $item->quantity = max(0, $item->quantity - $order->quantity);
                 if ($item->quantity <= 0) {
                     $item->status = 'sold';
                 }
                 $item->save();
             }
 
-            // 3. Remove item from buyer's cart
+            // 4. Remove from cart
             Itemcart::where('user_id', $order->buyer_id)
                 ->where('item_id', $order->item_id)
                 ->delete();
 
             DB::commit();
 
-            return response()->json(['message' => 'Receipt uploaded. Order completed and item updated.']);
+            return response()->json(['message' => 'Receipt uploaded to Cloudinary. Order completed.']);
 
         } catch (\Exception $e) {
             DB::rollBack();

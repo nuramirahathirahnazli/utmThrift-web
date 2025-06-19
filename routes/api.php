@@ -81,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Buyer to Seller Authentication
     Route::post('/apply-seller', [SellerApplicationController::class, 'apply'])->name('apply.seller');
 
+
     ///  ---- Seller Routes ---- ///
     //Routes for seller manage items
     Route::get('/items/categories', [SellerItemController::class, 'getCategories']); //fetch all item categories
@@ -94,6 +95,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/seller/upload-qr-code', [SellerController::class, 'uploadQRCode']);
     Route::get('/seller/{id}/qr-code', [SellerController::class, 'getQRCode']);
     
+    //Routes for seller track their sales
+    Route::get('/seller/{id}/sales', [SellerController::class, 'getSellerSales']);
+
 
     // Explore page routes with filters (example: /api/items?search=shirt&category_id=2&min_price=10&max_price=50&condition=new)
     // This is handled by ItemController@listItems above with query parameters
