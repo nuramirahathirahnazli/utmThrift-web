@@ -38,6 +38,7 @@ class ItemController extends Controller {
                         'name' => optional($item->category)->name ?? 'Unknown',
                     ],
                     'seller_name' => optional(optional($item->seller)->user)->name ?? 'Unknown',
+                    'seller_id' => optional($item->seller)->user_id,
                     'quantity' => $item->quantity,
                     'status' => $item->status,
                     'created_at' => $item->created_at->toDateTimeString(),
