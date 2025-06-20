@@ -9,10 +9,12 @@ class ItemCartController extends Controller
 {
     public function getCartItems($id)
     {
-        $cartItems = ItemCart::with('item')->where('user_id', $id)->get();
+        $cartItems = ItemCart::with('item.seller.user')->where('user_id', $id)->get();
 
         $formatted = $cartItems->map(function ($cartItem) {
             $item = $cartItem->item;
+            $seller = $item->seller;
+            $sellerUser = $seller?->user;
 
             return [
                 'cart_id' => $cartItem->id,
@@ -22,6 +24,10 @@ class ItemCartController extends Controller
                 'images' => json_decode($item->image) ?: [], 
                 'quantity' => $cartItem->quantity,
                 'created_at' => $cartItem->created_at->toDateTimeString(),
+
+                //seller details
+                'seller_id' => $seller?->user_id ?? 0,
+                'seller_name' => $sellerUser?->name ?? 'Unknown Seller',
             ];
         });
 
@@ -71,6 +77,27 @@ class ItemCartController extends Controller
         return response()->json(['message' => 'Item added to cart']);
     }
 
+    public function removeItem($itemId, Request $request)
+    {
+        $userId = $request->user()->id;
 
+        // Find the cart item for the current user and item ID
+        $cartItem = ItemCart::where('user_id', $userId)
+                        ->where('item_id', $itemId)
+                        ->first();
+
+        if (!$cartItem) {
+            return response()->json([
+                'message' => 'Item not found in cart',
+            ], 404);
+        }
+
+        // Delete the item from the cart
+        $cartItem->delete();
+
+        return response()->json([
+            'message' => 'Item removed from cart',
+        ], 200);
+    }
    
 }

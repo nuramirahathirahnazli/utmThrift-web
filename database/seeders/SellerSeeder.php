@@ -19,7 +19,7 @@ class SellerSeeder extends Seeder
             Seller::create([
                 'user_id' => $user->id,
                 'store_name' => $faker->company,
-                'matric_card_file' => $faker->imageUrl(), // You can replace this with a path to an image if needed
+                'matric_card_image' => $faker->imageUrl(), // You can replace this with a path to an image if needed
                 'verification_status' => $faker->randomElement(['pending', 'approved', 'rejected']),
                 'created_at' => now(),
                 'updated_at' => now(),

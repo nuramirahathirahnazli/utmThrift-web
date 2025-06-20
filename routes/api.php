@@ -10,6 +10,11 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ItemFavouriteController;
 use App\Http\Controllers\ItemCartController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ToyyibPayController;
+use App\Http\Controllers\ReviewRatingController;
+use App\Http\Controllers\SellerApplicationController;
+use App\Http\Controllers\SellerController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
@@ -45,7 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
     //Routes for user cart
     Route::post('/cart/add', [ItemCartController::class, 'addToCart']);
     Route::get('/cart/{id}', [ItemCartController::class, 'getCartItems']);
-    
+    Route::delete('/cart/remove/{itemId}', [ItemCartController::class, 'removeItem']);
+
     // Routes for user messages
     Route::get('/messages', [MessageController::class, 'index']);
     Route::post('/messages', [MessageController::class, 'store']);
@@ -54,6 +60,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/messages/unread-count', [MessageController::class, 'getUnreadCount']);
     Route::get('/messages/chat-list', [MessageController::class, 'getChatList']);
     Route::post('/messages/mark-as-read', [MessageController::class, 'markAsRead']);
+
+    // Routes for user orders checkout
+    Route::post('/checkout/meetup', [OrderController::class, 'checkoutMeetUp']);
+    Route::post('/orders/create', [OrderController::class, 'create']);
+    Route::post('/orders/{orderId}/confirm', [OrderController::class, 'confirmOrder'])->middleware('auth:sanctum'); 
+    Route::get('/orders/buyer', [OrderController::class, 'getBuyerOrders']);
+    Route::post('/orders/{id}/manual-confirm', [OrderController::class, 'manualConfirm']); //for payment method = online banking
+
+    // Routes for payment toyyibpay
+    Route::post('/create-bill', [ToyyibPayController::class, 'createBill']);
+    
+    //Routes for payment qr code
+    Route::post('/order/{id}/upload-receipt', [OrderController::class, 'uploadReceipt']);
+
+    //Routes for review/rating to seller
+    Route::post('/reviews', [ReviewRatingController::class, 'store']);                              // Submit review
+    Route::get('/reviews/seller/{sellerId}', [ReviewRatingController::class, 'getSellerReviews']);  // Get all reviews for a seller
+
+    // Buyer to Seller Authentication
+    Route::post('/apply-seller', [SellerApplicationController::class, 'apply'])->name('apply.seller');
 
 
     ///  ---- Seller Routes ---- ///
@@ -65,11 +91,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('seller/update-items/{id}', [SellerItemController::class, 'update']);
     Route::delete('/seller/delete-item/{id}', [SellerItemController::class, 'destroy']);
 
+    //Routes for seller manage QR Code
+    Route::post('/seller/upload-qr-code', [SellerController::class, 'uploadQRCode']);
+    Route::get('/seller/{id}/qr-code', [SellerController::class, 'getQRCode']);
+    
+    //Routes for seller track their sales
+    Route::get('/seller/{id}/sales', [SellerController::class, 'getSellerSales']);
+
 
     // Explore page routes with filters (example: /api/items?search=shirt&category_id=2&min_price=10&max_price=50&condition=new)
     // This is handled by ItemController@listItems above with query parameters
 });
-
 
 //Testing for CORS problem
 Route::get('/test-cors', function () {

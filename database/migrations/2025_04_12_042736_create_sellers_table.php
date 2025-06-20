@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('store_name');
-            $table->string('matric_card_file')->nullable(); // for uploaded file
+            $table->string('matric_card_image')->nullable(); // for uploaded file
             $table->enum('verification_status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });

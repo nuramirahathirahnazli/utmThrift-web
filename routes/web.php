@@ -3,11 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\AdminSellerController;
 use App\Http\Controllers\AdminEventController;
-
+use App\Http\Controllers\ToyyibPayController;
 Route::get('/event-image/{filename}', function ($filename) {
     $path = 'events/' . $filename;
 
@@ -23,8 +24,6 @@ Route::get('/event-image/{filename}', function ($filename) {
         ->header('Access-Control-Allow-Origin', '*');  // Allow all origins (or specify your frontend origin)
 });
 
-
-
 // Admin manage Seller 
 Route::prefix('/admin/sellers')->name('admin.sellers.')->group(function () {
     Route::get('/', [AdminSellerController::class, 'index'])->name('index');
@@ -32,6 +31,7 @@ Route::prefix('/admin/sellers')->name('admin.sellers.')->group(function () {
     Route::get('/{id}/edit', [AdminSellerController::class, 'edit'])->name('edit');
     Route::put('/{id}', [AdminSellerController::class, 'update'])->name('update');
     Route::post('/verify/{seller}', [AdminSellerController::class, 'verifySeller'])->name('verify');
+    
 });
 
 // Admin manage Event
@@ -44,6 +44,11 @@ Route::prefix('/admin/events')->name('admin.events.')->group(function () {
     Route::get('/{event}', [AdminEventController::class, 'show'])->name('show');
     Route::delete('/{event}', [AdminEventController::class, 'destroy'])->name('destroy');
 });
+
+
+// ToyyibPay’s success and callback is sent by their server. If it's protected by auth:sanctum, it may fail.
+Route::get('/payment-success', [ToyyibPayController::class, 'paymentSuccess']);
+Route::post('/payment-callback', [ToyyibPayController::class, 'paymentCallback']);
 
 
 Route::get('/', function () {
