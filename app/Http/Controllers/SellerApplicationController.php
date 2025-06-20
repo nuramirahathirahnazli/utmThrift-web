@@ -27,7 +27,7 @@ class SellerApplicationController extends Controller
 
         // Upload to Cloudinary 
         $uploadedFileUrl = Cloudinary::upload($request->file('matric_card_image')->getRealPath(), [
-            'folder' => 'matric_cards'
+            'folder' => 'utmthrift/matric_cards'
         ])->getSecurePath();
 
         // Save seller application

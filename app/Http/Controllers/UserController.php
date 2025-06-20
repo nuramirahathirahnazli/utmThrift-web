@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Cloudinary\Cloudinary;
-use Cloudinary\Api\Upload\UploadApi;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+
 
 class UserController extends Controller
 {
@@ -28,6 +28,7 @@ class UserController extends Controller
                 'gender' => $user->gender,
                 'location' => $user->location,
                 'user_role' => $user->user_role,
+                'profile_picture' => $user->profile_picture,
                 'created_at' => $user->created_at->format('Y-m-d H:i:s'), 
             ]
         ], 200);
@@ -38,7 +39,7 @@ class UserController extends Controller
         $user = auth()->user();
 
         $validatedData = $request->validate([
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'name' => 'required|string|max:255',
             'contact' => 'required|string|max:15',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
@@ -48,32 +49,26 @@ class UserController extends Controller
             'user_type' => 'required|string|in:Buyer,Seller',
         ]);
 
-        // Handle Profile Picture Upload
+        // ✅ Upload to Cloudinary if image exists
         if ($request->hasFile('profile_picture')) {
-            $image = $request->file('profile_picture');
             try {
-                // Cloudinary upload logic
-                $cloudinary = new Cloudinary();
-                $upload = $cloudinary->uploadApi()->upload($image->getRealPath(), [
-                    'folder' => 'utmthrift_pics', // Specify the folder in Cloudinary
-                ]);
+                $uploadedFileUrl = Cloudinary::upload(
+                    $request->file('profile_picture')->getRealPath(),
+                    ['folder' => 'utmthrift/profile_pictures']
+                )->getSecurePath();
 
-                // Log the Cloudinary response for debugging
-                \Log::info('Cloudinary Upload Response:', ['response' => $upload]);
+                \Log::info('Profile image uploaded to Cloudinary: ' . $uploadedFileUrl);
 
-                // Get the Cloudinary URL from the response
-                $profileImageUrl = $upload['secure_url'];
-
-                // Save the URL to the user’s profile_picture column
-                $user->profile_picture = $profileImageUrl;
+                // ✅ Add Cloudinary URL to data being updated
+                $validatedData['profile_picture'] = $uploadedFileUrl;
             } catch (\Exception $e) {
-                \Log::error('Error uploading image to Cloudinary: ' . $e->getMessage());
+                \Log::error('Failed to upload profile picture: ' . $e->getMessage());
             }
         }
 
+        // ✅ Update user with all validated data (including profile_picture if set)
         $user->update($validatedData);
 
-        // 🔹 Debug: Print new user data after update
         \Log::info('Updated User Data:', [
             'name' => $user->name,
             'contact' => $user->contact,
@@ -83,14 +78,14 @@ class UserController extends Controller
             'profile_picture' => $user->profile_picture,
         ]);
 
-        // Add CORS headers to the response
         return response()->json([
             'message' => 'Profile updated successfully.',
             'user' => $user,
         ])
-        ->header('Access-Control-Allow-Origin', '*')  // Allow all origins, you can specify a domain if needed
+        ->header('Access-Control-Allow-Origin', '*')
         ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
     }
+
 
 }
