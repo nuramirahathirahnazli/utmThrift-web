@@ -35,16 +35,10 @@
             </div>
             
             <nav class="mt-4">
-                <a href="{{ url('/dashboard') }}" 
+                <a href="{{ url('/') }}" 
                    class="sidebar-item flex items-center p-4 hover:bg-gray-100 {{ request()->is('dashboard') ? 'active' : '' }}">
                     <i class="fas fa-chart-pie w-6 text-gray-500"></i>
                     <span class="ml-3">Dashboard</span>
-                </a>
-                
-                <a href="{{ url('/users') }}" 
-                   class="sidebar-item flex items-center p-4 hover:bg-gray-100 {{ request()->is('users*') ? 'active' : '' }}">
-                    <i class="fas fa-users w-6 text-gray-500"></i>
-                    <span class="ml-3">Users</span>
                 </a>
                 
                 <a href="{{ url('/admin/sellers') }}" 
