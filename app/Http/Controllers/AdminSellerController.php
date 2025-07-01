@@ -49,7 +49,7 @@ class AdminSellerController extends Controller
 
 
     public function edit($id) {
-        $seller = User::findOrFail($id);
+        $seller = Seller::with('user')->findOrFail($id);
         return view('users.admin.sellers.seller_edit', compact('seller'));
     }
 
