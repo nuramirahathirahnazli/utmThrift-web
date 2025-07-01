@@ -15,10 +15,10 @@
 
         <!-- Profile Picture Section -->
         <div class="mb-10 text-center">
-            @if($seller->profile_picture)
-                <img src="{{ asset('storage/' . $seller->profile_picture) }}" 
-                     alt="Profile Picture" 
-                     class="w-40 h-40 rounded-full mx-auto border-4 border-white shadow-xl object-cover hover:shadow-lg transition-shadow duration-300">
+            @if($seller->user->profile_picture)
+                <img src="{{ $seller->user->profile_picture }}"
+                alt="Profile Picture"
+                class="w-40 h-40 rounded-full mx-auto border-4 border-white shadow-xl object-cover hover:shadow-lg transition-shadow duration-300">
             @else
                 <div class="w-40 h-40 rounded-full bg-gray-100 mx-auto flex items-center justify-center 
                             border-4 border-white shadow-xl hover:shadow-lg transition-shadow duration-300">
