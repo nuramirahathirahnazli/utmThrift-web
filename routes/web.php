@@ -6,9 +6,11 @@ use Illuminate\Support\Facades\Response;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminSellerController;
 use App\Http\Controllers\AdminEventController;
 use App\Http\Controllers\ToyyibPayController;
+
 Route::get('/event-image/{filename}', function ($filename) {
     $path = 'events/' . $filename;
 
@@ -23,6 +25,8 @@ Route::get('/event-image/{filename}', function ($filename) {
         ->header('Content-Type', $type)
         ->header('Access-Control-Allow-Origin', '*');  // Allow all origins (or specify your frontend origin)
 });
+
+Route::get('/', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
 // Admin manage Seller 
 Route::prefix('/admin/sellers')->name('admin.sellers.')->group(function () {
@@ -51,18 +55,14 @@ Route::get('/payment-success', [ToyyibPayController::class, 'paymentSuccess']);
 Route::post('/payment-callback', [ToyyibPayController::class, 'paymentCallback']);
 
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/events', function () {
+//     return view('event.index');
+// });
 
-Route::get('/events', function () {
-    return view('event.index');
-});
+// Route::get('/users/sellers', function () {
+//     return view('users.sellers.index');
+// });
 
-Route::get('/users/sellers', function () {
-    return view('users.sellers.index');
-});
-
-Route::get('/users/buyers', function () {
-    return view('users.buyers.index');
-});
+// Route::get('/users/buyers', function () {
+//     return view('users.buyers.index');
+// });
