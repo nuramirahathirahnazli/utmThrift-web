@@ -20,16 +20,19 @@ class AdminSellerController extends Controller
             'unverified' => Seller::where('verification_status', 'pending')->count(), // Get unverified sellers from the sellers table
         ];
 
-        $allSellers = Seller::with('user')  
-            ->latest()
-            ->paginate(10)
-            ->appends(['tab' => 'all']);
+        $allSellers = Seller::whereHas('user', function ($query) {
+            $query->where('user_type', 'Seller');
+        })->with('user')->latest()->paginate(10);
 
-        $unverifiedSellers = Seller::with('user') 
-            ->where('verification_status', 'pending')
-            ->latest()
-            ->paginate(10)
-            ->appends(['tab' => 'unverified']);
+
+        $unverifiedSellers = Seller::where('verification_status', 'pending')
+        ->whereHas('user', function ($query) {
+            $query->where('user_type', 'Seller');
+        })
+        ->with('user')
+        ->latest()
+        ->paginate(10)
+        ->appends(['tab' => 'unverified']);
 
 
         return view('users.admin.sellers.index', [
@@ -47,7 +50,6 @@ class AdminSellerController extends Controller
         return view('users.admin.sellers.seller_details', compact('seller'));
     }
 
-
     public function edit($id) {
         $seller = Seller::with('user')->findOrFail($id);
         return view('users.admin.sellers.seller_edit', compact('seller'));
@@ -55,16 +57,31 @@ class AdminSellerController extends Controller
 
     public function update(Request $request, $id) {
         $request->validate([
-            'name' => 'required|string|max:255',
             'email' => 'required|email',
-            'matric_number' => 'required',
-            'contact_number' => 'required',
+            'matric' => 'required|string|max:255',
             'user_type' => 'required|in:Buyer,Seller',
-            'verification_status' => 'required|in:pending,approved,rejected',
         ]);
 
-        $seller = User::findOrFail($id);
-        $seller->update($request->all());
+        $seller = Seller::with('user')->findOrFail($id);
+        $user = $seller->user;
+
+        // Update user
+        $user->update([
+            'email' => $request->email,
+            'matric' => $request->matric,
+            'user_type' => $request->user_type,
+        ]);
+
+        // Only update verification status if user type is Seller
+        if ($request->user_type === 'Seller') {
+            $request->validate([
+                'verification_status' => 'required|in:pending,approved,rejected',
+            ]);
+            $seller->verification_status = $request->verification_status;
+        }
+
+
+        $seller->save();
 
         return redirect()->route('admin.sellers.index')->with('success', 'Seller info updated.');
     }

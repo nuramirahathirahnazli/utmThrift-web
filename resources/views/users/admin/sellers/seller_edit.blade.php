@@ -104,8 +104,8 @@
                     <label for="user_type" class="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
                     <select name="user_type" id="user_type" 
                             class="w-full px-4 py-2.5 rounded-lg border focus:border-[var(--primary-color)] focus:ring-2 focus:ring-[var(--primary-color)]/20 @error('user_type') border-red-300 @else border-gray-300 @enderror">
-                        <option value="Buyer" {{ $seller->user_type === 'Buyer' ? 'selected' : '' }}>Buyer</option>
-                        <option value="Seller" {{ $seller->user_type === 'Seller' ? 'selected' : '' }}>Seller</option>
+                        <option value="Buyer" {{ $seller->user->user_type === 'Buyer' ? 'selected' : '' }}>Buyer</option>
+                        <option value="Seller" {{ $seller->user->user_type === 'Seller' ? 'selected' : '' }}>Seller</option>
                     </select>
                     @error('user_type')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -121,6 +121,8 @@
                         <option value="approved" {{ $seller->verification_status === 'approved' ? 'selected' : '' }}>Verified Seller</option>
                         <option value="rejected" {{ $seller->verification_status === 'rejected' ? 'selected' : '' }}>Rejected</option>
                     </select>
+                    <p class="text-xs text-gray-500 mt-1">* Only applicable if account type is "Seller".</p>
+
                     @error('verification_status')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -137,6 +139,23 @@
                 Save Changes
             </button>
         </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const userTypeSelect = document.getElementById('user_type');
+                const verificationStatusSection = document.getElementById('verification_status').closest('div');
+
+                function toggleVerificationStatus() {
+                    if (userTypeSelect.value === 'Buyer') {
+                        verificationStatusSection.style.display = 'none';
+                    } else {
+                        verificationStatusSection.style.display = 'block';
+                    }
+                }
+
+                userTypeSelect.addEventListener('change', toggleVerificationStatus);
+                toggleVerificationStatus(); // Run on load
+            });
+        </script>
 
     </form>
 </div>
