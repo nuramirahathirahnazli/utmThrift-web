@@ -182,14 +182,41 @@
 
             <form action="{{ route('admin.sellers.verify', $seller->id) }}" method="POST" class="w-full sm:w-auto">
                 @csrf
-                <button type="submit" name="action" value="reject" 
-                    class="w-full flex items-center justify-center bg-red-500 hover:bg-red-600 text-white 
-                           px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-lg">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                    Reject Application
-                </button>
+                <!-- Reject Button (Triggers Modal) -->
+                    <button type="button"
+                        onclick="document.getElementById('rejectModal').classList.remove('hidden')"
+                        class="w-full sm:w-auto flex items-center justify-center bg-red-500 hover:bg-red-600 text-white 
+                            px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Reject Application
+                    </button>
+                    <!-- Reject Reason Modal -->
+                    <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                        <div class="bg-white w-full max-w-md rounded-xl p-6 shadow-lg relative">
+                            <button onclick="document.getElementById('rejectModal').classList.add('hidden')"
+                                class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg font-bold">✕</button>
+
+                            <h2 class="text-xl font-semibold text-red-600 mb-4">Reject Seller Application</h2>
+                            <form action="{{ route('admin.sellers.verify', $seller->id) }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="action" value="reject">
+
+                                <div class="mb-4">
+                                    <label for="rejection_reason" class="block text-sm font-medium text-gray-700">Reason for Rejection</label>
+                                    <textarea name="rejection_reason" id="rejection_reason" rows="4"
+                                        class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)]"
+                                        required></textarea>
+                                </div>
+
+                                <div class="flex justify-end">
+                                    <button type="submit"
+                                        class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg">Confirm Reject</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
             </form>
         </div>
         @endif

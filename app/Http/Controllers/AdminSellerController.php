@@ -92,13 +92,15 @@ class AdminSellerController extends Controller
         $seller = Seller::findOrFail($id);
 
         $request->validate([
-            'action' => 'required|in:approve,reject'
+            'action' => 'required|in:approve,reject',
+            'rejection_reason' => 'required_if:action,reject|max:1000'
         ]);
 
         $status = $request->action === 'approve' ? 'approved' : 'rejected';
 
         // Update seller verification status
         $seller->verification_status = $status;
+        $seller->rejection_reason = $status === 'rejected' ? $request->rejection_reason : null;
         $seller->save();
 
         // Update user_type
@@ -108,7 +110,7 @@ class AdminSellerController extends Controller
             $user->save();
 
             // Send email notification
-            $user->notify(new SellerApplicationStatusNotification($status));
+            $user->notify(new SellerApplicationStatusNotification($status, $seller->rejection_reason));
         }
 
         session()->flash('success', 'Seller status updated!');
