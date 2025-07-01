@@ -7,11 +7,12 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class SellerApplicationStatusNotification extends Notification
+class SellerApplicationStatusNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     protected $status;
+    protected $reason;
 
     public function __construct($status, $reason = null)
     {
@@ -27,19 +28,46 @@ class SellerApplicationStatusNotification extends Notification
     public function toMail($notifiable)
     {
         if ($this->status === 'approved') {
-            return (new MailMessage)
-                ->subject('Seller Application Approved')
-                ->line('🎉 Congratulations! Your application to become a seller has been approved.')
-                ->line('You can now start listing your items on UTMThrift.')
-                ->line('Thank you for using UTMThrift!');
+            return $this->buildApprovedEmail();
         } else {
-            return (new MailMessage)
-                ->subject('Seller Application Rejected')
-                ->line('❌ Unfortunately, your application to become a seller has been rejected.')
-                ->when($this->reason, fn($mail) => $mail->line('Reason: ' . $this->reason))
-                ->line('If you believe this was a mistake, please contact admin.')
-                ->line('Thank you for using UTMThrift.');
+            return $this->buildRejectedEmail();
         }
     }
 
+    protected function buildApprovedEmail()
+    {
+        return (new MailMessage)
+            ->subject('🎉 Your UTMThrift Seller Application Has Been Approved!')
+            ->greeting('Congratulations!')
+            ->line('We are pleased to inform you that your application to become a seller on UTMThrift has been approved.')
+            ->line('You can now:')
+            ->line('✅ List your items for sale')
+            ->line('✅ Manage your inventory')
+            ->line('If you have any questions, our support team is happy to help.')
+            ->salutation('Welcome to the UTMThrift Seller Community!');
+    }
+
+    protected function buildRejectedEmail()
+    {
+        $mail = (new MailMessage)
+            ->subject('Your UTMThrift Seller Application Status')
+            ->greeting('Hello,')
+            ->line('Thank you for your interest in becoming a UTMThrift seller.')
+            ->line('After careful review, we regret to inform you that your application has not been approved at this time.');
+
+        if ($this->reason) {
+            $mail->line('**Reason for rejection:**')
+                 ->line($this->reason)
+                 ->line('');
+        }
+
+        $mail->line('You may:')
+            ->line('🔄 Reapply in the future')
+            ->line('📧 Contact us if you believe this was a mistake')
+            ->action('Contact Support', url('/contact'))
+            ->line('We appreciate your understanding and encourage you to try again in the future.')
+            ->salutation('Best regards,<br>The UTMThrift Team');
+
+        return $mail;
+    }
 }
