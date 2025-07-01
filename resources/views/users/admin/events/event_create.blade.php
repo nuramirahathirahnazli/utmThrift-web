@@ -96,6 +96,7 @@
             <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Event Poster</label>
                 <input type="file" name="poster"
+                        accept=".jpg,.jpeg,.png,.gif"
                        class="mt-1 block w-full rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition duration-150">
                 @error('poster')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
