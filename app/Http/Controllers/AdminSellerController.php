@@ -16,9 +16,16 @@ class AdminSellerController extends Controller
         $activeTab = $request->get('tab', 'all');
 
         $counts = [
-            'total' => Seller::count(), // Get total sellers from the sellers table
-            'unverified' => Seller::where('verification_status', 'pending')->count(), // Get unverified sellers from the sellers table
+            'total' => Seller::whereHas('user', function ($query) {
+                $query->where('user_type', 'Seller');
+            })->count(),
+
+            'unverified' => Seller::where('verification_status', 'pending')
+                ->whereHas('user', function ($query) {
+                    $query->where('user_type', 'Seller');
+                })->count(),
         ];
+
 
         $allSellers = Seller::whereHas('user', function ($query) {
             $query->where('user_type', 'Seller');
