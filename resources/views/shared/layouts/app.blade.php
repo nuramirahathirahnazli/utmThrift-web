@@ -35,7 +35,7 @@
             </div>
             
             <nav class="mt-4">
-                <a href="{{ url('/') }}" 
+                <a href="{{ url('/dashboard') }}" 
                    class="sidebar-item flex items-center p-4 hover:bg-gray-100 {{ request()->is('dashboard') ? 'active' : '' }}">
                     <i class="fas fa-chart-pie w-6 text-gray-500"></i>
                     <span class="ml-3">Dashboard</span>
@@ -60,11 +60,21 @@
             <!-- Header -->
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-2xl font-semibold text-gray-800">@yield('title')</h2>
-                <div class="flex items-center">
-                    <div class="relative">
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="flex items-center focus:outline-none">
                         <img src="https://ui-avatars.com/api/?name=Admin+User" 
-                             class="w-10 h-10 rounded-full cursor-pointer" 
-                             alt="Admin Avatar">
+                            class="w-10 h-10 rounded-full" 
+                            alt="Admin Avatar">
+                    </button>
+                    <div x-show="open" @click.away="open = false" 
+                        class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-10">
+                        <form method="POST" action="{{ route('admin.logout') }}">
+                            @csrf
+                            <button type="submit" 
+                                    class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-700">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
