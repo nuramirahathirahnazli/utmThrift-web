@@ -141,11 +141,8 @@ public function update(Request $request, Event $event)
         $event->update($validatedData);
         Log::info('Event updated successfully', ['event_id' => $event->id]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Event updated successfully',
-            'data' => $event
-        ]);
+        return redirect()->route('admin.events.index')->with('success', 'Event updated successfully.');
+
 
     } catch (\Exception $e) {
         Log::error('Update failed', [

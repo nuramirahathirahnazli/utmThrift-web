@@ -17,29 +17,27 @@ class AdminSellerController extends Controller
 
         $counts = [
             'total' => Seller::whereHas('user', function ($query) {
-                $query->where('user_type', 'Seller');
+                $query->whereIn('user_type', ['Seller', 'PendingSeller']);
             })->count(),
 
             'unverified' => Seller::where('verification_status', 'pending')
                 ->whereHas('user', function ($query) {
-                    $query->where('user_type', 'Seller');
+                    $query->whereIn('user_type', ['Seller', 'PendingSeller']);
                 })->count(),
         ];
 
-
         $allSellers = Seller::whereHas('user', function ($query) {
-            $query->where('user_type', 'Seller');
+            $query->whereIn('user_type', ['Seller', 'PendingSeller']);
         })->with('user')->latest()->paginate(10);
 
-
         $unverifiedSellers = Seller::where('verification_status', 'pending')
-        ->whereHas('user', function ($query) {
-            $query->where('user_type', 'Seller');
-        })
-        ->with('user')
-        ->latest()
-        ->paginate(10)
-        ->appends(['tab' => 'unverified']);
+            ->whereHas('user', function ($query) {
+                $query->whereIn('user_type', ['Seller', 'PendingSeller']);
+            })
+            ->with('user')
+            ->latest()
+            ->paginate(10)
+            ->appends(['tab' => 'unverified']);
 
 
         return view('users.admin.sellers.index', [
