@@ -23,6 +23,7 @@ class ItemController extends Controller {
         $limit = $request->query('limit', 10);
 
         $items = Item::with(['category', 'seller.user'])
+            ->where('status', 'Available')
             ->latest()
             ->take($limit)
             ->get()
@@ -55,6 +56,7 @@ class ItemController extends Controller {
     public function show($id)
     {
         $item = Item::with(['category', 'seller.user'])
+            ->where('status', 'Available')
             ->findOrFail($id);
 
         return response()->json([
