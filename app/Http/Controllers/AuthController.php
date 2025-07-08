@@ -22,7 +22,6 @@ class AuthController extends Controller
             'password' => 'required|min:6',
             'contact' => 'required',
             'matric' => 'required|unique:users',
-            'user_type' => 'required|in:Buyer,Seller'
         ]);
 
         $otp = rand(100000, 999999);
@@ -37,7 +36,7 @@ class AuthController extends Controller
         $user->password = bcrypt($request->password);
         $user->contact = $request->contact;
         $user->matric = $request->matric;
-        $user->user_type = $request->user_type;
+        $user->user_type = 'Buyer';
         $user->otp = $otp;
         $user->otp_expiry = $otpExpiry;
         $user->is_verified = 0;
