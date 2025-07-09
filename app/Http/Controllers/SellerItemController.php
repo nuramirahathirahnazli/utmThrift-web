@@ -63,7 +63,13 @@ class SellerItemController extends Controller
         $imageUrls = [];
 
         foreach ($request->file('images') as $image) {
-            $uploadedFileUrl = Cloudinary::upload($image->getRealPath())->getSecurePath();
+            $uploadedFileUrl = Cloudinary::upload(
+            $image->getRealPath(),
+            [
+                'folder' => 'utmthrift/items'
+            ]
+        )->getSecurePath();
+
             $imageUrls[] = $uploadedFileUrl;
         }
 
@@ -144,16 +150,29 @@ class SellerItemController extends Controller
         $item->condition = $request->condition;
         $item->category_id = $request->category_id;
 
-        // Optional: Replace images if new ones are uploaded
+        // Step 1: Start with any existing images the user wants to keep
+        $existingImages = $request->input('existing_images', []);
+        if (!is_array($existingImages)) {
+            $existingImages = [$existingImages];
+        }
+
+        $imageUrls = $existingImages;
+
+        // Step 2: Upload new images (if any)
         if ($request->hasFile('images')) {
-            $imageUrls = [];
             foreach ($request->file('images') as $image) {
-                $uploadedFileUrl = Cloudinary::upload($image->getRealPath())->getSecurePath();
+                $uploadedFileUrl = Cloudinary::upload(
+                    $image->getRealPath(),
+                    ['folder' => 'utmthrift/items'] 
+                )->getSecurePath();
+
                 $imageUrls[] = $uploadedFileUrl;
             }
-
-            $item->image = json_encode($imageUrls); // Save as JSON string
         }
+
+
+        // Step 3: Save combined images (existing + new)
+        $item->image = json_encode($imageUrls);
 
         $item->save();
 
@@ -166,7 +185,7 @@ class SellerItemController extends Controller
                 'description' => $item->description,
                 'price' => $item->price,
                 'condition' => $item->condition,
-                'images' => json_decode($item->image),
+                'images' => $imageUrls,
                 'category_id' => $item->category_id,
             ]
         ], 200);

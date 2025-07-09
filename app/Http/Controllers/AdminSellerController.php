@@ -16,17 +16,25 @@ class AdminSellerController extends Controller
         $activeTab = $request->get('tab', 'all');
 
         $counts = [
-            'total' => Seller::count(), // Get total sellers from the sellers table
-            'unverified' => Seller::where('verification_status', 'pending')->count(), // Get unverified sellers from the sellers table
+            'total' => Seller::whereHas('user', function ($query) {
+                $query->whereIn('user_type', ['Seller', 'PendingSeller']);
+            })->count(),
+
+            'unverified' => Seller::where('verification_status', 'pending')
+                ->whereHas('user', function ($query) {
+                    $query->whereIn('user_type', ['Seller', 'PendingSeller']);
+                })->count(),
         ];
 
-        $allSellers = Seller::with('user')  
-            ->latest()
-            ->paginate(10)
-            ->appends(['tab' => 'all']);
+        $allSellers = Seller::whereHas('user', function ($query) {
+            $query->whereIn('user_type', ['Seller', 'PendingSeller']);
+        })->with('user')->latest()->paginate(10);
 
-        $unverifiedSellers = Seller::with('user') 
-            ->where('verification_status', 'pending')
+        $unverifiedSellers = Seller::where('verification_status', 'pending')
+            ->whereHas('user', function ($query) {
+                $query->whereIn('user_type', ['Seller', 'PendingSeller']);
+            })
+            ->with('user')
             ->latest()
             ->paginate(10)
             ->appends(['tab' => 'unverified']);
@@ -47,24 +55,38 @@ class AdminSellerController extends Controller
         return view('users.admin.sellers.seller_details', compact('seller'));
     }
 
-
     public function edit($id) {
-        $seller = User::findOrFail($id);
+        $seller = Seller::with('user')->findOrFail($id);
         return view('users.admin.sellers.seller_edit', compact('seller'));
     }
 
     public function update(Request $request, $id) {
         $request->validate([
-            'name' => 'required|string|max:255',
             'email' => 'required|email',
-            'matric_number' => 'required',
-            'contact_number' => 'required',
+            'matric' => 'required|string|max:255',
             'user_type' => 'required|in:Buyer,Seller',
-            'verification_status' => 'required|in:pending,approved,rejected',
         ]);
 
-        $seller = User::findOrFail($id);
-        $seller->update($request->all());
+        $seller = Seller::with('user')->findOrFail($id);
+        $user = $seller->user;
+
+        // Update user
+        $user->update([
+            'email' => $request->email,
+            'matric' => $request->matric,
+            'user_type' => $request->user_type,
+        ]);
+
+        // Only update verification status if user type is Seller
+        if ($request->user_type === 'Seller') {
+            $request->validate([
+                'verification_status' => 'required|in:pending,approved,rejected',
+            ]);
+            $seller->verification_status = $request->verification_status;
+        }
+
+
+        $seller->save();
 
         return redirect()->route('admin.sellers.index')->with('success', 'Seller info updated.');
     }
@@ -75,13 +97,15 @@ class AdminSellerController extends Controller
         $seller = Seller::findOrFail($id);
 
         $request->validate([
-            'action' => 'required|in:approve,reject'
+            'action' => 'required|in:approve,reject',
+            'rejection_reason' => 'required_if:action,reject|max:1000'
         ]);
 
         $status = $request->action === 'approve' ? 'approved' : 'rejected';
 
         // Update seller verification status
         $seller->verification_status = $status;
+        $seller->rejection_reason = $status === 'rejected' ? $request->rejection_reason : null;
         $seller->save();
 
         // Update user_type
@@ -91,7 +115,7 @@ class AdminSellerController extends Controller
             $user->save();
 
             // Send email notification
-            $user->notify(new SellerApplicationStatusNotification($status));
+            $user->notify(new SellerApplicationStatusNotification($status, $seller->rejection_reason));
         }
 
         session()->flash('success', 'Seller status updated!');

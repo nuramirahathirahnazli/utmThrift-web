@@ -198,7 +198,7 @@ class OrderController extends Controller
         ]);
     }
 
-    //Bila user click on "back to orders"
+    //Bila user click on "back to orders" for online banking payment
     public function manualConfirm(Request $request, $id)
     {
         $user = auth()->user();
@@ -270,7 +270,7 @@ class OrderController extends Controller
             )->getSecurePath();
 
             // 2. Update order
-            $order->receipt_image = $uploadedUrl;  // This now stores full Cloudinary URL
+            $order->receipt_image = $uploadedUrl;  
             $order->order_status = 'completed';
             $order->save();
 

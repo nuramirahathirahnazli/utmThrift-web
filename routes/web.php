@@ -6,9 +6,12 @@ use Illuminate\Support\Facades\Response;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminSellerController;
 use App\Http\Controllers\AdminEventController;
 use App\Http\Controllers\ToyyibPayController;
+
 Route::get('/event-image/{filename}', function ($filename) {
     $path = 'events/' . $filename;
 
@@ -24,25 +27,37 @@ Route::get('/event-image/{filename}', function ($filename) {
         ->header('Access-Control-Allow-Origin', '*');  // Allow all origins (or specify your frontend origin)
 });
 
-// Admin manage Seller 
-Route::prefix('/admin/sellers')->name('admin.sellers.')->group(function () {
-    Route::get('/', [AdminSellerController::class, 'index'])->name('index');
-    Route::get('/{id}/details', [AdminSellerController::class, 'show'])->name('show');
-    Route::get('/{id}/edit', [AdminSellerController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [AdminSellerController::class, 'update'])->name('update');
-    Route::post('/verify/{seller}', [AdminSellerController::class, 'verifySeller'])->name('verify');
-    
-});
+// Admin Authentication Routes
+Route::get('/', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
+Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
-// Admin manage Event
-Route::prefix('/admin/events')->name('admin.events.')->group(function () {
-    Route::get('/', [AdminEventController::class, 'index'])->name('index');
-    Route::get('/create', [AdminEventController::class, 'create'])->name('create');
-    Route::post('/', [AdminEventController::class, 'store'])->name('store');
-    Route::get('/{event}/edit', [AdminEventController::class, 'edit'])->name('edit');
-    Route::put('/{event}', [AdminEventController::class, 'update'])->name('update');
-    Route::get('/{event}', [AdminEventController::class, 'show'])->name('show');
-    Route::delete('/{event}', [AdminEventController::class, 'destroy'])->name('destroy');
+
+//  PROTECTED ADMIN ROUTES
+Route::middleware(['auth', 'is_admin'])->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Admin manage Seller 
+    Route::prefix('/admin/sellers')->name('admin.sellers.')->group(function () {
+        Route::get('/', [AdminSellerController::class, 'index'])->name('index');
+        Route::get('/{id}/details', [AdminSellerController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [AdminSellerController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AdminSellerController::class, 'update'])->name('update');
+        Route::post('/verify/{seller}', [AdminSellerController::class, 'verifySeller'])->name('verify');
+    });
+
+    // Admin manage Event
+    Route::prefix('/admin/events')->name('admin.events.')->group(function () {
+        Route::get('/', [AdminEventController::class, 'index'])->name('index');
+        Route::get('/create', [AdminEventController::class, 'create'])->name('create');
+        Route::post('/', [AdminEventController::class, 'store'])->name('store');
+        Route::get('/{event}/edit', [AdminEventController::class, 'edit'])->name('edit');
+        Route::put('/{event}', [AdminEventController::class, 'update'])->name('update');
+        Route::get('/{event}', [AdminEventController::class, 'show'])->name('show');
+        Route::delete('/{event}', [AdminEventController::class, 'destroy'])->name('destroy');
+    });
 });
 
 
@@ -51,18 +66,14 @@ Route::get('/payment-success', [ToyyibPayController::class, 'paymentSuccess']);
 Route::post('/payment-callback', [ToyyibPayController::class, 'paymentCallback']);
 
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/events', function () {
+//     return view('event.index');
+// });
 
-Route::get('/events', function () {
-    return view('event.index');
-});
+// Route::get('/users/sellers', function () {
+//     return view('users.sellers.index');
+// });
 
-Route::get('/users/sellers', function () {
-    return view('users.sellers.index');
-});
-
-Route::get('/users/buyers', function () {
-    return view('users.buyers.index');
-});
+// Route::get('/users/buyers', function () {
+//     return view('users.buyers.index');
+// });

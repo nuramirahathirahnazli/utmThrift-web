@@ -5,47 +5,51 @@
 
 @section('content')
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Statistics Cards -->
+    <!-- Total Users -->
     <div class="bg-[var(--primary-color)] text-white p-6 rounded-lg">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-sm">Total Users</p>
-                <p class="text-3xl font-bold">1,234</p>
+                <p class="text-3xl font-bold">{{ $totalUsers }}</p>
+                <p class="text-sm mt-1">Total Users</p>
             </div>
             <i class="fas fa-users text-3xl"></i>
         </div>
     </div>
 
+    <!-- Total Sellers -->
     <div class="bg-[var(--secondary-color)] text-gray-800 p-6 rounded-lg">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-sm">Active Sellers</p>
-                <p class="text-3xl font-bold">89</p>
+                <p class="text-3xl font-bold">{{ $totalSellers }}</p>
+                <p class="text-sm mt-1">Total Sellers</p>
             </div>
             <i class="fas fa-store text-3xl"></i>
         </div>
     </div>
 
+    <!-- Total Events -->
     <div class="bg-green-500 text-white p-6 rounded-lg">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-sm">Ongoing Events</p>
-                <p class="text-3xl font-bold">5</p>
+                <p class="text-3xl font-bold">{{ $totalEvents }}</p>
+                <p class="text-sm mt-1">Total Events</p>
             </div>
-            <i class="fas fa-calendar-alt text-3xl"></i>
+            <i class="fas fa-calendar text-3xl"></i>
         </div>
     </div>
 
+    <!-- Today's Events -->
     <div class="bg-purple-500 text-white p-6 rounded-lg">
         <div class="flex justify-between items-center">
             <div>
-                <p class="text-sm">Total Sales</p>
-                <p class="text-3xl font-bold">RM 12,345</p>
+                <p class="text-3xl font-bold">{{ $todayEvents }}</p>
+                <p class="text-sm mt-1">Events Today</p>
             </div>
-            <i class="fas fa-wallet text-3xl"></i>
+            <i class="fas fa-calendar-day text-3xl"></i>
         </div>
     </div>
 </div>
+
 
 <!-- Recent Activities -->
 <div class="bg-white rounded-lg shadow-sm p-6">
@@ -61,20 +65,26 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Sample Data -->
-                <tr class="hover:bg-gray-50">
-                    <td class="py-3 px-4">John Doe</td>
-                    <td class="py-3 px-4">New registration</td>
-                    <td class="py-3 px-4">2023-08-15</td>
-                    <td class="py-3 px-4">
-                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">Completed</span>
-                    </td>
-                </tr>
-                <!-- Add more rows -->
+                @forelse ($pendingSellers as $seller)
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-4">{{ $seller->user->name }}</td>
+                        <td class="py-3 px-4">Applied as Seller</td>
+                        <td class="py-3 px-4">{{ $seller->created_at->format('Y-m-d') }}</td>
+                        <td class="py-3 px-4">
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm">Pending</span>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="text-center py-4">No unverified sellers at the moment.</td>
+                    </tr>
+                @endforelse
             </tbody>
+
         </table>
     </div>
 </div>
+
 
 <!-- Statistics Chart -->
 <div class="mt-8 bg-white rounded-lg shadow-sm p-6">
@@ -86,23 +96,30 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Sample Chart.js implementation
-    const ctx = document.getElementById('salesChart').getContext('2d');
+        const ctx = document.getElementById('salesChart').getContext('2d');
     new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: {!! json_encode(array_map(fn($m) => date('F', mktime(0, 0, 0, $m, 10)), array_keys($eventStats))) !!},
             datasets: [{
-                label: 'Monthly Sales',
-                data: [12, 19, 3, 5, 2, 3],
-                borderColor: 'rgb(0, 35, 102)',
-                tension: 0.1
+                label: 'Monthly Event Count',
+                data: {!! json_encode(array_values($eventStats)) !!},
+                backgroundColor: 'rgba(0, 102, 204, 0.6)',
+                borderColor: 'rgb(0, 102, 204)',
+                borderWidth: 1
             }]
         },
         options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    precision: 0
+                }
+            },
             responsive: true,
             maintainAspectRatio: false
         }
     });
+
 </script>
 @endsection

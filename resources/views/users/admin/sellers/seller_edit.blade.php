@@ -43,28 +43,28 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                     <div class="mt-1 p-3 bg-gray-50 rounded-md border border-gray-200 text-gray-600">
-                        {{ $seller->name }}
+                        {{ $seller->user->name }}
                     </div>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
                     <div class="mt-1 p-3 bg-gray-50 rounded-md border border-gray-200 text-gray-600">
-                        {{ $seller->contact_number ?? 'N/A' }}
+                        {{ $seller->user->contact ?? 'N/A' }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
                     <div class="mt-1 p-3 bg-gray-50 rounded-md border border-gray-200 text-gray-600">
-                        {{ ucfirst($seller->gender) ?? 'N/A' }}
+                        {{ ucfirst($seller->user->gender) ?? 'N/A' }}
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
                     <div class="mt-1 p-3 bg-gray-50 rounded-md border border-gray-200 text-gray-600">
-                        {{ $seller->location ?? 'N/A' }}
+                        {{ $seller->user->location ?? 'N/A' }}
                     </div>
                 </div>
             </div>
@@ -82,7 +82,7 @@
                 <!-- Email -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                    <input type="email" name="email" id="email" value="{{ old('email', $seller->email) }}"
+                    <input type="email" name="email" id="email" value="{{ old('email', $seller->user->email) }}"
                            class="w-full px-4 py-2.5 rounded-lg border focus:border-[var(--primary-color)] focus:ring-2 focus:ring-[var(--primary-color)]/20 @error('email') border-red-300 @else border-gray-300 @enderror">
                     @error('email')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -91,10 +91,10 @@
 
                 <!-- Matric Number -->
                 <div>
-                    <label for="matric_number" class="block text-sm font-medium text-gray-700 mb-2">Matric Number</label>
-                    <input type="text" name="matric_number" id="matric_number" value="{{ old('matric_number', $seller->matric_number) }}"
-                           class="w-full px-4 py-2.5 rounded-lg border focus:border-[var(--primary-color)] focus:ring-2 focus:ring-[var(--primary-color)]/20 @error('matric_number') border-red-300 @else border-gray-300 @enderror">
-                    @error('matric_number')
+                    <label for="matric" class="block text-sm font-medium text-gray-700 mb-2">Matric Number</label>
+                    <input type="text" name="matric" id="matric" value="{{ old('matric', $seller->user->matric) }}"
+                           class="w-full px-4 py-2.5 rounded-lg border focus:border-[var(--primary-color)] focus:ring-2 focus:ring-[var(--primary-color)]/20 @error('matric') border-red-300 @else border-gray-300 @enderror">
+                    @error('matric')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -104,8 +104,8 @@
                     <label for="user_type" class="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
                     <select name="user_type" id="user_type" 
                             class="w-full px-4 py-2.5 rounded-lg border focus:border-[var(--primary-color)] focus:ring-2 focus:ring-[var(--primary-color)]/20 @error('user_type') border-red-300 @else border-gray-300 @enderror">
-                        <option value="Buyer" {{ $seller->user_type === 'Buyer' ? 'selected' : '' }}>Buyer</option>
-                        <option value="Seller" {{ $seller->user_type === 'Seller' ? 'selected' : '' }}>Seller</option>
+                        <option value="Buyer" {{ $seller->user->user_type === 'Buyer' ? 'selected' : '' }}>Buyer</option>
+                        <option value="Seller" {{ $seller->user->user_type === 'Seller' ? 'selected' : '' }}>Seller</option>
                     </select>
                     @error('user_type')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -121,6 +121,8 @@
                         <option value="approved" {{ $seller->verification_status === 'approved' ? 'selected' : '' }}>Verified Seller</option>
                         <option value="rejected" {{ $seller->verification_status === 'rejected' ? 'selected' : '' }}>Rejected</option>
                     </select>
+                    <p class="text-xs text-gray-500 mt-1">* Only applicable if account type is "Seller".</p>
+
                     @error('verification_status')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -137,6 +139,23 @@
                 Save Changes
             </button>
         </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const userTypeSelect = document.getElementById('user_type');
+                const verificationStatusSection = document.getElementById('verification_status').closest('div');
+
+                function toggleVerificationStatus() {
+                    if (userTypeSelect.value === 'Buyer') {
+                        verificationStatusSection.style.display = 'none';
+                    } else {
+                        verificationStatusSection.style.display = 'block';
+                    }
+                }
+
+                userTypeSelect.addEventListener('change', toggleVerificationStatus);
+                toggleVerificationStatus(); // Run on load
+            });
+        </script>
 
     </form>
 </div>

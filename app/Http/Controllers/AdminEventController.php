@@ -31,38 +31,49 @@ class AdminEventController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'event_date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'location' => 'required|string|max:255',
-            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
-        ]);
+        Log::info('Store event request started');
+        Log::info('Request all data:', $request->all());
 
-        $data = $request->all();
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'event_date' => 'required|date',
+                'start_time' => 'required|date_format:H:i',
+                'end_time' => 'required|date_format:H:i|after:start_time',
+                'location' => 'required|string|max:255',
+                'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+            ]);
+            Log::info('Validation passed', $validated);
 
-        if ($request->hasFile('poster')) {
-            $file = $request->file('poster');
+            $data = $request->only(['title', 'description', 'event_date', 'start_time', 'end_time', 'location']);
 
-            // Clean the original filename
-            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalName); // Replace symbols
-            $filename = time() . '_' . $cleanName . '.' . $file->getClientOriginalExtension();
+            if ($request->hasFile('poster')) {
+                $file = $request->file('poster');
 
-            // Save the file
-            $file->storeAs('public/events', $filename);
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalName);
+                $filename = time() . '_' . $cleanName . '.' . $file->getClientOriginalExtension();
 
-            // Save filename into the $data array
-            $data['poster'] = $filename;
+                $file->storeAs('public/events', $filename);
+                $data['poster'] = $filename;
+
+                Log::info('Poster uploaded successfully', ['poster' => $filename]);
+            }
+
+            $event = Event::create($data);
+            Log::info('Event created successfully', ['event_id' => $event->id]);
+
+            return redirect()->route('admin.events.index')->with('success', 'Event created successfully.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed', $e->errors());
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Something else failed', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Something went wrong.');
         }
-        //dd($data);
-        Event::create($data);
-
-        return redirect()->route('admin.events.index')->with('success', 'Event created successfully.');
     }
-
 
     /**
      * Display the specified resource.
@@ -130,11 +141,8 @@ public function update(Request $request, Event $event)
         $event->update($validatedData);
         Log::info('Event updated successfully', ['event_id' => $event->id]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Event updated successfully',
-            'data' => $event
-        ]);
+        return redirect()->route('admin.events.index')->with('success', 'Event updated successfully.');
+
 
     } catch (\Exception $e) {
         Log::error('Update failed', [

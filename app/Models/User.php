@@ -50,6 +50,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'verification_status' => 'string',
     ];
+    
 
      /**
      * Get the items for the user.

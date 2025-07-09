@@ -16,7 +16,7 @@ class EventController extends Controller
             ->limit($limit)
             ->get()
             ->map(function ($event) {
-                $event->poster = url('event-image/' . $event->poster);  // <-- changed here
+                $event->poster = url('event-image/' . $event->poster);  
                 return $event;
             });
 
@@ -39,7 +39,7 @@ class EventController extends Controller
             'start_time' => $event->start_time,
             'end_time' => $event->end_time,
             'location' => $event->location,
-            'poster' => url('event-image/' . $event->poster),  // <-- changed here
+            'poster' => url('event-image/' . $event->poster), 
         ]);
     }
 
