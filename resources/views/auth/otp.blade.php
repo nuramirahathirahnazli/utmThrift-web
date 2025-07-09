@@ -93,7 +93,7 @@
         </div>
         
         <div class="footer">
-            <p>© 2023 UTMThrift. All rights reserved.</p>
+            <p>© 2025 UTMThrift. All rights reserved.</p>
             <p>Universiti Teknologi Malaysia</p>
         </div>
     </div>

@@ -49,7 +49,7 @@ class UserController extends Controller
             'user_type' => 'required|string|in:Buyer,Seller',
         ]);
 
-        // ✅ Upload to Cloudinary if image exists
+        // Upload to Cloudinary if image exists
         if ($request->hasFile('profile_picture')) {
             try {
                 $uploadedFileUrl = Cloudinary::upload(
@@ -59,14 +59,14 @@ class UserController extends Controller
 
                 \Log::info('Profile image uploaded to Cloudinary: ' . $uploadedFileUrl);
 
-                // ✅ Add Cloudinary URL to data being updated
+                // Add Cloudinary URL to data being updated
                 $validatedData['profile_picture'] = $uploadedFileUrl;
             } catch (\Exception $e) {
                 \Log::error('Failed to upload profile picture: ' . $e->getMessage());
             }
         }
 
-        // ✅ Update user with all validated data (including profile_picture if set)
+        // Update user with all validated data (including profile_picture if set)
         $user->update($validatedData);
 
         \Log::info('Updated User Data:', [

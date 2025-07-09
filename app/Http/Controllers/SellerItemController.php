@@ -63,7 +63,13 @@ class SellerItemController extends Controller
         $imageUrls = [];
 
         foreach ($request->file('images') as $image) {
-            $uploadedFileUrl = Cloudinary::upload($image->getRealPath())->getSecurePath();
+            $uploadedFileUrl = Cloudinary::upload(
+            $image->getRealPath(),
+            [
+                'folder' => 'utmthrift/items'
+            ]
+        )->getSecurePath();
+
             $imageUrls[] = $uploadedFileUrl;
         }
 
@@ -155,10 +161,15 @@ class SellerItemController extends Controller
         // Step 2: Upload new images (if any)
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $uploadedFileUrl = Cloudinary::upload($image->getRealPath())->getSecurePath();
+                $uploadedFileUrl = Cloudinary::upload(
+                    $image->getRealPath(),
+                    ['folder' => 'utmthrift/items'] 
+                )->getSecurePath();
+
                 $imageUrls[] = $uploadedFileUrl;
             }
         }
+
 
         // Step 3: Save combined images (existing + new)
         $item->image = json_encode($imageUrls);
