@@ -133,6 +133,8 @@ class SellerItemController extends Controller
     {
         $item = Item::findOrFail($id);
 
+        \Log::info($request->all());
+
         // Validate input (you can improve this if needed)
         $request->validate([
             'name' => 'required',
@@ -152,9 +154,7 @@ class SellerItemController extends Controller
 
         // Step 1: Start with any existing images the user wants to keep
         $existingImages = $request->input('existing_images', []);
-        if (!is_array($existingImages)) {
-            $existingImages = [$existingImages];
-        }
+        $existingImages = is_array($existingImages) ? $existingImages : [$existingImages];
 
         $imageUrls = $existingImages;
 
@@ -170,11 +170,11 @@ class SellerItemController extends Controller
             }
         }
 
-
         // Step 3: Save combined images (existing + new)
         $item->image = json_encode($imageUrls);
 
         $item->save();
+        \Log::info($request->all());
 
         return response()->json([
             'success' => true,
